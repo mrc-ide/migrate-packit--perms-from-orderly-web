@@ -28,7 +28,7 @@ classifiers = [
 dependencies = [
   "click",
   "montagu>=0.0.2",
-  "orderlyweb-api>=1.0.0"
+  "requests"
 ]
 
 [project.urls]
