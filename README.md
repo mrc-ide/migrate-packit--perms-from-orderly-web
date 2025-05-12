@@ -11,7 +11,7 @@ It is recommended to install from local source in a hatch shell:
 ```console
 hatch shell
 hatch build
-pip install dist/migrate_packit_perms_from_orderly_web-<version>.tar.gz~~~~
+pip install dist/migrate_packit_perms_from_orderly_web-<version>.tar.gz
 ```
 ..where `<version>` can be found in `src/migrate_packit_perms_from_orderly_web/__about__.py`
 
@@ -20,3 +20,10 @@ pip install dist/migrate_packit_perms_from_orderly_web-<version>.tar.gz~~~~
 TODO
 
 `migrate-perms`
+
+## Testing locally
+
+1. Run a local Montagu environment (no Montagu test data):
+`./scripts/run-dependencies`
+2. `hatch shell`
+3. Build and install the migrations code, set environment variables to the local Montagu endpoints and credentials, and run `migrate-perms`: `./scripts/dev.sh`
