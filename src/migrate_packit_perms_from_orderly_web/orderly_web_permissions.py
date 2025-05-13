@@ -1,5 +1,4 @@
 import requests
-import os
 from urllib.parse import urljoin
 
 class OrderlyWebPermissions:
@@ -21,18 +20,21 @@ class OrderlyWebPermissions:
         response = requests.post(auth_url, data=data, auth=auth,
                                  headers=headers, verify = self.verify)
         if response.status_code != 200:
-            msg = 'Unexpected status code: {}. Unable to authenticate.'
+            msg = 'Unexpected status code: {}. Unable to authenticate with montagu.'  # TODO: share response validate code
             raise Exception(msg.format(response.status_code))
-        token = response.json()['access_token']
+        self.montagu_token = response.json()['access_token']
         print("token:")
-        print(token)
+        print(self.montagu_token)
 
         print("authenticating with OrderlyWeb")
         # make login call with montagu cookie set, and get ow cookie
         ow_login_url = self.ow_url + "/login/" # TODO: find a better join!
         print(ow_login_url)
-        headers = { "Cookie": f"montagu_jwt_token={token}" }
+        headers = { "Cookie": f"montagu_jwt_token={self.montagu_token}" }
         response = requests.get(ow_login_url, headers=headers, allow_redirects=False, verify = self.verify)
+        if response.status_code != 302:
+            msg = 'Unexpected status code: {}. Unable to authenticate with OrderlyWeb.'  # TODO: share response validate code
+            raise Exception(msg.format(response.status_code))
         print(response.text)
         self.cookie = response.headers["Set-Cookie"]
         print("ow-cookie:")
@@ -49,13 +51,11 @@ class OrderlyWebPermissions:
     def get_roles(self):
         print("getting roles")
         response = self.get("/roles/")
-        print(response.text)
         return response
 
     def get_users(self):
         print("getting users")
         response = self.get("/users/")
-        print(response.text)
         return response
 
 

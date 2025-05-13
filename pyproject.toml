@@ -27,7 +27,6 @@ classifiers = [
 
 dependencies = [
   "click",
-  "montagu>=0.0.2",
   "requests"
 ]
 
