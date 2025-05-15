@@ -44,7 +44,7 @@ services:
       - PACKIT_AUTH_GITHUB_ORG=none
       - PACKIT_AUTH_GITHUB_TEAM=none
   orderly-web-packit-db:
-    image: mrcide/packit-db:main
+    image: mrcide/packit-db:mrc-6478-create-preauth-userrole
     networks:
       - proxy
     healthcheck:
@@ -52,7 +52,7 @@ services:
   outpack_server:
     image: mrcide/outpack_server:main
     volumes:
-      - ./../packit/demos/orderly:/outpack # This requires packit repo to be cloned in same dir as montagu-proxy!
+      - ./outpack:/outpack
     networks:
       - proxy
   db:

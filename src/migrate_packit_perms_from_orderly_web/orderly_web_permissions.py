@@ -43,18 +43,21 @@ class OrderlyWebPermissions:
     def get(self,relative_url):
         url = self.ow_url + relative_url # TODO: find better join
         print(f"Getting from: {url}")
-        headers = { "Cookie": self.cookie }
+        headers = {
+            "Cookie": self.cookie,
+            "Accept": "application/json"
+        }
         response = requests.get(url, headers=headers, verify = self.verify)
         print(response.text)
         return response
 
     def get_roles(self):
-        print("getting roles")
+        print("getting OW roles")
         response = self.get("/roles/")
         return response
 
     def get_users(self):
-        print("getting users")
+        print("getting OW users")
         response = self.get("/users/")
         return response
 

@@ -12,6 +12,8 @@ cleanup
 # This traps errors and Ctrl+C
 trap cleanup EXIT
 
+mkdir outpack
+
 docker volume rm montagu_orderly_volume -f
 docker compose pull
 docker compose up -d
@@ -55,8 +57,20 @@ docker run --rm --network=montagu_proxy \
   -v montagu_orderly_volume:/orderly \
   $ow_migrate_image
 
+# Migrate orderly reports to outpack
+orderly_outpack_migrate_image=mrcide/outpack.orderly:main
+docker pull $orderly_outpack_migrate_image
+# TODO: remove -d once it's working'
+docker run \
+  -v ./demo:/orderly:ro \
+  -v ./outpack:/outpack \
+  -d \
+  $orderly_outpack_migrate_image /orderly /outpack --once
+
 # Add test user to montagu
 export NETWORK=montagu_proxy
+
+# TODO: use vars for shared user details
 
 $here/montagu_cli.sh add "Test User" test.user \
     test.user@example.com password \
@@ -68,9 +82,14 @@ $here/montagu_cli.sh addRole test.user admin
 # Add test user to orderly_web
 $here/orderly_web_cli.sh add-users test.user@example.com
 $here/orderly_web_cli.sh grant test.user@example.com */reports.read
+$here/orderly_web_cli.sh grant test.user@example.com */reports.review
 $here/orderly_web_cli.sh grant test.user@example.com */users.manage
 
-# TODO: add some other example users and roles which we can test against
+# TODO: add some other example users and roles which we can test the migration against
+
+# Add test user to packit
+docker exec montagu-orderly-web-packit-db-1 create-preauth-user --username "test.user" --email "test.user@example.com" --displayname "Test User" --role "ADMIN"
+
 
 echo "Dependencies are running. Press Ctrl+C to teardown."
 sleep infinity
