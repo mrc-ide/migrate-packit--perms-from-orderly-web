@@ -12,8 +12,6 @@ cleanup
 # This traps errors and Ctrl+C
 trap cleanup EXIT
 
-mkdir outpack
-
 docker volume rm montagu_orderly_volume -f
 docker compose pull
 docker compose up -d
@@ -84,6 +82,12 @@ $here/orderly_web_cli.sh add-users test.user@example.com
 $here/orderly_web_cli.sh grant test.user@example.com */reports.read
 $here/orderly_web_cli.sh grant test.user@example.com */reports.review
 $here/orderly_web_cli.sh grant test.user@example.com */users.manage
+
+# copy helper scripts into packit-db
+docker compose cp $here/scripts/packit-db/add-permission-to-role orderly-web-packit-db:/bin/add-permission-to-role
+docker compose cp $here/scripts/packit-db/add-user-to-role orderly-web-packit-db:/bin/add-user-to-role
+docker compose cp $here/scripts/packit-db/create-role orderly-web-packit-db:/bin/create-role
+
 
 # TODO: add some other example users and roles which we can test the migration against
 

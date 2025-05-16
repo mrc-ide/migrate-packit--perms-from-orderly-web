@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+set -e
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --role)
+            ROLE="$2"
+            shift 2
+            ;;
+        --permission)
+            PERMISSION="$2"
+            shift 2
+            ;;
+        --packet-group)
+            PACKET_GROUP="$2"
+            shift 2
+            ;;
+        --packet-id)
+            PACKET="$2"
+            shift 2
+            ;;
+        *)
+            echo "Invalid argument: $1"
+            exit 1
+            ;;
+    esac
+done
+
+if [[ -n "$PACKET" ]]
+then
+    echo "Setting permission with packet scope"
+
+    SQL='INSERT INTO role_permission (role_id, permission_id, packet_id)
+    VALUES ((select role.id from role where role.name="'$ROLE'"), (select permission_id from permission where permission.name="'$PERMISSION'"),
+             "'$PACKET'");'
+elif [[ -n "$PACKET_GROUP" ]]
+then
+    echo "Setting permission with packet group scope"
+
+    SQL='INSERT INTO role_permission (role_id, permission_id, packet_group_id)
+    VALUES ((select role.id from role where role.name="'$ROLE'"), (select permission_id from permission where permission.name="'$PERMISSION'"),
+             (select packet_group.id from packet_group where packet_group.name="'$PACKET_GROUP'"));'
+else
+    echo "Setting permission with global scope"
+
+    SQL='INSERT INTO role_permission (role_id, permission_id)
+    VALUES ((select role.id from role where role.name="'$ROLE'"), (select permission_id from permission where permission.name="'$PERMISSION'"));'
+fi
+
+psql -U packituser -d packit \
+    --single-transaction \
+    -v ON_ERROR_STOP=on \
+    $SQL

@@ -24,12 +24,14 @@ class Migrate:
 
         # 1. Separate out existing admin and non-admin Packit get_users
 
-        # 2. For Packit non-admin users, delete their existing (non-user) roles and directly held permissions
+        # 2. Delete any non-admin Packit users who do not also exist in OW
 
-        # 3. In packit, create any OW users who do not yet exist.
+        # 3. For remaining Packit non-admin users, delete their existing (non-user) roles and directly held permissions
 
-        # 4. Delete any non-ADMIN, non-user roles from Packit
+        # 4. In packit, create any OW users who do not yet exist.
 
-        # 5. Migrate non-ADMIN roles from OW
+        # 5. Delete any non-ADMIN, non-user roles from Packit
 
-        # 6. For Packit non-admin users, migrate their roles and permissions from OW
+        # 6. Migrate non-ADMIN roles from OW
+
+        # 7. For Packit non-admin users, migrate their roles and permissions from OW
