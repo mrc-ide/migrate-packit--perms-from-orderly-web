@@ -84,16 +84,43 @@ $here/orderly_web_cli.sh grant test.user@example.com */reports.review
 $here/orderly_web_cli.sh grant test.user@example.com */users.manage
 
 # copy helper scripts into packit-db
-docker compose cp $here/scripts/packit-db/add-permission-to-role orderly-web-packit-db:/bin/add-permission-to-role
-docker compose cp $here/scripts/packit-db/add-user-to-role orderly-web-packit-db:/bin/add-user-to-role
-docker compose cp $here/scripts/packit-db/create-role orderly-web-packit-db:/bin/create-role
+docker compose cp $here/packit-db/add-permission-to-role orderly-web-packit-db:/bin/add-permission-to-role
+docker compose cp $here/packit-db/add-user-to-role orderly-web-packit-db:/bin/add-user-to-role
+docker compose cp $here/packit-db/create-role orderly-web-packit-db:/bin/create-role
 
+# Add test (admin) user to packit
+PACKIT_DB=montagu-orderly-web-packit-db-1
+docker exec $PACKIT_DB create-preauth-user --username "test.user" --email "test.user@example.com" --displayname "Test User" --role "ADMIN"
 
-# TODO: add some other example users and roles which we can test the migration against
+# Add some other example users and roles which we can test the migration against
 
-# Add test user to packit
-docker exec montagu-orderly-web-packit-db-1 create-preauth-user --username "test.user" --email "test.user@example.com" --displayname "Test User" --role "ADMIN"
+# PACKIT
+# Add a non-admin role. This should be deleted during the migration
+docker exec $PACKIT_DB create-role "runner"
+docker exec $PACKIT_DB add-permission-to-role --role "runner" --permission "packet.run"
 
+# Add a non-admin user who also exists in ow - perms should be migrated
+docker exec $PACKIT_DB create-preauth-user --username "both.user" --email "both.user@example.com" --displayname "Both User" --role "runner"
+
+# Add a non-admin users who does not exist in ow - user should be removed
+docker exec $PACKIT_DB create-preauth-user --username "packit.only.user" --email "packit.only.user@example.com" --displayname "Packit Only User" --role "runner"
+
+# Montagu/OW
+# Add the non-admin user who already exists in packit - perms should be migrated, so now a reader not a runner
+$here/montagu_cli.sh add "Both User" both.user \
+    both.user@example.com password \
+    --if-not-exists
+$here/montagu_cli.sh addRole both.user user
+$here/orderly_web_cli.sh add-users both.user@example.com
+$here/orderly_web_cli.sh grant both.user@example.com */reports.read
+
+# Add a non-admin user who does not exist in packit yet, should be created
+$here/montagu_cli.sh add "OW Only User" ow.only.user \
+    ow.only.user@example.com password \
+    --if-not-exists
+$here/montagu_cli.sh addRole ow.only.user user
+$here/orderly_web_cli.sh add-users ow.only.user@example.com
+$here/orderly_web_cli.sh grant ow.only.user@example.com */reports.run
 
 echo "Dependencies are running. Press Ctrl+C to teardown."
 sleep infinity

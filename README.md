@@ -21,9 +21,17 @@ TODO
 
 `migrate-perms`
 
-## Testing locally
+## Manual testing 
 
 1. Run a local Montagu environment (no Montagu test data):
 `./scripts/run-dependencies`
 2. `hatch shell`
 3. Build and install the migrations code, set environment variables to the local Montagu endpoints and credentials, and run `migrate-perms`: `./scripts/dev.sh`
+
+# Integration test
+1. Run dependencies: `./scripts/run-dependencies`
+2. `hatch shell`
+3. `hatch test`
+
+NB The integration test runs the migration, changing the state of Packit. You should re-run dependencies to set up the 
+original Packit state every time you re-run the integration test. 

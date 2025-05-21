@@ -49,7 +49,8 @@ class OrderlyWebPermissions:
         }
         response = requests.get(url, headers=headers, verify = self.verify)
         print(response.text)
-        return response
+        # TODO: throww if not 200
+        return response.json()["data"]
 
     def get_roles(self):
         print("getting OW roles")

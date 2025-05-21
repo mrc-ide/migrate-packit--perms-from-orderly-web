@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
+PACKET_GROUP=''
+PACKET=''
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --role)
@@ -30,24 +32,29 @@ if [[ -n "$PACKET" ]]
 then
     echo "Setting permission with packet scope"
 
-    SQL='INSERT INTO role_permission (role_id, permission_id, packet_id)
-    VALUES ((select role.id from role where role.name="'$ROLE'"), (select permission_id from permission where permission.name="'$PERMISSION'"),
-             "'$PACKET'");'
+    SQL="INSERT INTO role_permission (role_id, permission_id, packet_id)
+    VALUES ((select role.id from role where role.name=:'role'), (select permission_id from permission where permission.name=:'permission'),
+             :'packet');"
 elif [[ -n "$PACKET_GROUP" ]]
 then
     echo "Setting permission with packet group scope"
 
-    SQL='INSERT INTO role_permission (role_id, permission_id, packet_group_id)
-    VALUES ((select role.id from role where role.name="'$ROLE'"), (select permission_id from permission where permission.name="'$PERMISSION'"),
-             (select packet_group.id from packet_group where packet_group.name="'$PACKET_GROUP'"));'
+    SQL="INSERT INTO role_permission (role_id, permission_id, packet_group_id)
+    VALUES ((select role.id from role where role.name=:'role'), (select permission_id from permission where permission.name=:'permission'),
+             (select packet_group.id from packet_group where packet_group.name=:'packet_group'));"
 else
     echo "Setting permission with global scope"
 
-    SQL='INSERT INTO role_permission (role_id, permission_id)
-    VALUES ((select role.id from role where role.name="'$ROLE'"), (select permission_id from permission where permission.name="'$PERMISSION'"));'
+    SQL="INSERT INTO role_permission (role_id, permission_id)
+    VALUES ((select role.id from role where role.name=:'role'), (select permission.id from permission where permission.name=:'permission'));"
 fi
 
 psql -U packituser -d packit \
     --single-transaction \
     -v ON_ERROR_STOP=on \
-    $SQL
+    -v "role=$ROLE" \
+    -v "permission=$PERMISSION" \
+    -v "packet=$PACKET" \
+    -v "packet_group=$PACKET_GROUP" <<EOF
+$SQL
+EOF
