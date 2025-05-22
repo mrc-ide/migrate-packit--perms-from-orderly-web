@@ -25,9 +25,8 @@ def migrate_perms(montagu_url, orderly_web_url, packit_api_url, user, password, 
     m.prepare_migrate()
     # Flag up changes which will be made to the user and give them the chance to cancel
     click.echo(f"Not modifying Packit ADMIN users: {m.packit_admin_users}")
-    click.echo(f"Migrating non-admin Packit users also found in OrderlyWeb: {m.packit_users_to_migrate}")
-    click.echo(f"Deleting non-admin Packit users not found in OrderlyWeb: {m.packit_users_to_delete}")
     click.echo(f"Creating new users in Packit: {m.packit_users_to_create}")
+    click.echo(f"Creating new roles in Packit: {m.packit_roles_to_create}")
     if click.confirm("Continue with migration?"):
         m.migrate_permissions()
         click.echo("Migration complete")

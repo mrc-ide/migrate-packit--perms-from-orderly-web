@@ -37,13 +37,6 @@ class PackitPermissions:
         print(response.text)
         return response.json()
 
-    def delete(self, relative_url):
-        url = self.get_url(relative_url)
-        headers = self.get_auth_header()
-        response = requests.delete(url, headers = headers, verify = self.verify)
-        if response.status_code != 204:
-            raise Exception(f"Unexpected status code {response.status_code} for DELETE {url}")
-
     def post(self, relative_url, data):
         url = self.get_url(relative_url)
         headers = self.get_auth_header()
@@ -59,9 +52,6 @@ class PackitPermissions:
     def get_roles(self):
         print("Getting Packit roles")
         return self.get("/roles")
-
-    def delete_user(self, username):
-        self.delete(f"/user/{username}")
 
     def create_user(self, username, email, display_name, user_roles):
         self.post("/user/external", {

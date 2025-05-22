@@ -25,15 +25,15 @@ def test_migrate():
 
     sut.prepare_migrate()
     assert sut.packit_admin_users == ["test.user"]
-    assert sut.packit_users_to_delete == ["packit.only.user"]
-    assert sut.packit_users_to_migrate == ["both.user"]
-    assert sut.packit_users_to_create == ["ow.only.user@example.com"]
+    assert sut.packit_users_to_create == ["dev.user@example.com", "funder.user@example.com"]
 
     # Check expected users before we migrate
-    assert_packit_users(sut.packit, ["test.user", "packit.only.user", "both.user"])
+    assert_packit_users(sut.packit, ["test.user"])
 
     sut.migrate_permissions()
 
     # Check expected users after we migrate
-    assert_packit_users(sut.packit, ["test.user", "both.user", "ow.only.user@example.com"])
+    assert_packit_users(sut.packit, ["dev.user@example.com", "funder.user@example.com", "test.user" ])
+
+
 
