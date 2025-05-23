@@ -75,8 +75,6 @@ class OrderlyWebPermissions:
                 result[name] = []
             if published:
                 result[name].append(id)
-        print("PUBLISHED VERSIONS")
-        print(result)
         return result
 
 
