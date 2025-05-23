@@ -27,6 +27,10 @@ def migrate_perms(montagu_url, orderly_web_url, packit_api_url, user, password, 
     click.echo(f"Not modifying Packit ADMIN users: {m.packit_admin_users}")
     click.echo(f"Creating new users in Packit: {m.packit_users_to_create}")
     click.echo(f"Creating new roles in Packit: {m.packit_roles_to_create}")
+    click.echo(f"Found the following published report version counts:")
+    for name, versions in m.published_report_versions.items():
+        click.echo(f"{name}: {len(versions)}")
+
     if click.confirm("Continue with migration?"):
         m.migrate_permissions()
         click.echo("Migration complete")

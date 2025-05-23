@@ -64,6 +64,9 @@ class Migrate:
         self.ow_roles_to_create_in_packit = list(filter(lambda r: r["name"] != "Admin", self.ow_roles))
         self.packit_roles_to_create = list(map(lambda r: r["name"], self.ow_roles_to_create_in_packit))
 
+        # REPORT VERSIONS
+        self.published_report_versions = self.orderly_web.get_published_report_versions()
+
 
     def migrate_permissions(self):
         print("Doing migration!")

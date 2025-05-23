@@ -62,4 +62,22 @@ class OrderlyWebPermissions:
         response = self.get("/users/")
         return response
 
+    def get_published_report_versions(self):
+        print("getting published OW report versions")
+        response = self.get("/api/v2/versions/")
+        result = {}
+        for version in response:
+            name = version["name"]
+            id = version["id"]
+            published = version["published"]
+            # return a value in dict for each report even if no published versions
+            if not name in result:
+                result[name] = []
+            if published:
+                result[name].append(id)
+        print("PUBLISHED VERSIONS")
+        print(result)
+        return result
+
+
 
