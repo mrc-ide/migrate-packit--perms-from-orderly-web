@@ -5,32 +5,41 @@ OUTPACK_READ = "outpack.read"
 PACKET_READ = "packet.read"
 
 def unpack_ow_perm(ow_perm):
-        return ow_perm["name"], ow_perm["scope_prefix"], ow_perm["scope_id"]
+    print("UNPACKING")
+    print(ow_perm)
+    return ow_perm["name"], ow_perm["scope_prefix"], ow_perm["scope_id"]
 
-def is_reviewer(ow_perm):
+def is_reviewer(ow_perms):
     # util to check if user with these perms is a reviewer - we assume any review perm implies global review
-    name, prefix, id = unpack_ow_perm(ow_perm)
-    return name == REPORTS_REVIEW
+    for ow_perm in ow_perms:
+        name, prefix, id = unpack_ow_perm(ow_perm)
+        if name == REPORTS_REVIEW:
+            return True
+    return False
 
-def is_global_reader():
+def is_global_reader(ow_perms):
     # util to check if user with these perms has global read permission
-    name, prefix, id = unpack_ow_perm(ow_perm)
-        return name == REPORTS_READ and prefix is None
+    for ow_perm in ow_perms:
+        name, prefix, id = unpack_ow_perm(ow_perm)
+        if name == REPORTS_READ and prefix is None:
+            return True
+    return False
 
 def build_packit_perm(name, packet_id = None):
     return {
-        name: name,
-        packedId: packet_id,
-        packetGroupId: None
+        "permission": name,
+        "packetId": packet_id,
+        "packetGroupId": None,
+        "tagId": None
     }
 
 class MapPermissions:
     def __init__(self, published_report_versions):
         self.published_report_versions = published_report_versions
 
-    def append_packet_read_perms_for_published_report_versions(report_name, list_to_append):
+    def append_packet_read_perms_for_published_report_versions(self, report_name, list_to_append):
         for version in self.published_report_versions[report_name]:
-            list.append(build_packit_perm(PACKET_READ, version) # It would be more efficient to build these in advance!
+            list_to_append.append(build_packit_perm(PACKET_READ, version)) # It would be more efficient to build these in advance!
 
     def map_ow_permissions_to_packit_permissions(self, ow_perms):
         # reports.run => packet.run, outpack.read
@@ -46,9 +55,12 @@ class MapPermissions:
         # - We are ignoring pinned reports manage permission as this is not implemented as a user feature in packit yet - we
         #   will assign this perm as required.
 
+        #print(f"DOING MAPPING OF {ow_perms}")
+
         packit_perms = []
         outpack_read_already_granted = False
         for ow_perm in ow_perms:
+            #print(f"DOING UNPACKING OF {ow_perm}")
             ow_perm_name,  ow_perm_scope_prefix, ow_perm_scope_id = unpack_ow_perm(ow_perm)
 
             match ow_perm_name:
@@ -58,18 +70,17 @@ class MapPermissions:
                         packit_perms.append(build_packit_perm(OUTPACK_READ))
                 case "users.manage":
                     packit_perms.append(build_packit_perm("user.manage"))
-                case REPORTS_REVIEW:
+                case "reports.review":
                     packit_perms.append(build_packit_perm(PACKET_READ))
                     packit_perms.append(build_packit_perm("packet.manage"))
                     if not outpack_read_already_granted:
                         packit_perms.append(build_packit_perm(OUTPACK_READ))
-                case REPORTS_READ:
-                    if not is_reviewer(ow_perms)
+                case "reports.read":
+                    if not is_reviewer(ow_perms):
                         if ow_perm_scope_prefix == "report" and not is_global_reader(ow_perms):
-                            append_packet_read_perms_for_published_report_versions(ow_perm_scope_id, packit_perms)
-                        else if ow_perm_scope_prefix is None:
+                            self.append_packet_read_perms_for_published_report_versions(ow_perm_scope_id, packit_perms)
+                        elif ow_perm_scope_prefix is None:
                             for report_name in self.published_report_versions:
-                                append_packet_read_perms_for_published_report_versions(report_name, packit_perms)
+                                self.append_packet_read_perms_for_published_report_versions(report_name, packit_perms)
 
-                case _:
-                    # There are some ow perms we do not map, eg for documents and pinned reports
+        return packit_perms

@@ -45,6 +45,14 @@ class PackitPermissions:
         if response.status_code != 201:
             raise Exception(f"Unexpected status code {response.status_code} for POST {url}")
 
+    def put(self, relative_url, data):
+        url = self.get_url(relative_url)
+        headers = self.get_auth_header()
+        headers["Content-Type"] = "application/json" # TODO: be more DRY
+        response = requests.put(url, data = json.dumps(data), headers = headers, verify = self.verify)
+        if response.status_code != 200:
+            raise Exception(f"Unexpected status code {response.status_code} for PUT {url}")
+
     def get_users(self):
         print("Getting Packit users")
         return self.get("/users")
@@ -59,4 +67,17 @@ class PackitPermissions:
             "email": email,
             "displayName": display_name,
             "userRoles": user_roles
+        })
+
+    def create_role(self, role_name):
+        self.post("/roles", {
+            "name": role_name,
+            "permissionNames": [] # permissions are set in a separate call
+        })
+
+    # This is used both to set permissions on user group roles, and individual user roles (identified by user name)
+    def set_permissions_on_role(self, role_name, permissions):
+        self.put(f"/roles/{role_name}/permissions", {
+            "addPermissions": permissions,
+            "removePermissions": []
         })

@@ -48,7 +48,7 @@ class OrderlyWebPermissions:
             "Accept": "application/json"
         }
         response = requests.get(url, headers=headers, verify = self.verify)
-        print(response.text)
+        #print(response.text)
         # TODO: throww if not 200
         return response.json()["data"]
 

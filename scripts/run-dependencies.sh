@@ -58,11 +58,10 @@ docker run --rm --network=montagu_proxy \
 # Migrate orderly reports to outpack
 orderly_outpack_migrate_image=mrcide/outpack.orderly:main
 docker pull $orderly_outpack_migrate_image
-# TODO: remove -d once it's working'
+
 docker run \
-  -v ./demo:/orderly:ro \
+  -v ./demo:/orderly \
   -v ./outpack:/outpack \
-  -d \
   $orderly_outpack_migrate_image /orderly /outpack --once
 
 # Add test user to montagu
@@ -101,8 +100,10 @@ $here/montagu_cli.sh add "Funder User" funder.user \
 $here/montagu_cli.sh addRole funder.user user
 $here/orderly_web_cli.sh add-users funder.user@example.com
 $here/orderly_web_cli.sh grant funder.user@example.com report:html/reports.read
-FIRST_MINIMAL_VERSION=$(ls -t $here/../demo/archive/minimal | head -n 1)
-$here/orderly_web_cli.sh grant funder.user@example.com version:$FIRST_MINIMAL_VERSION/reports.read
+#FIRST_MINIMAL_VERSION=$(ls -t $here/../demo/archive/minimal | head -n 1)
+# minimal has one published and two unpublished versions,
+# So funder.user should have one direct packet read permission
+$here/orderly_web_cli.sh grant funder.user@example.com report:minimal/reports.read
 
 $here/montagu_cli.sh add "Dev User" dev.user \
     dev.user@example.com password \
@@ -116,7 +117,9 @@ $here/orderly_web_cli.sh add-groups funder developer
 
 # Give different perms to the roles than those the users have directly
 $here/orderly_web_cli.sh grant developer */reports.review */users.manage
-$here/orderly_web_cli.sh grant funder report:interactive/reports.read */documents.read
+# other has two published and two unpublished versions, interactive has one unpublished, use_resource has one published.
+# So funder role should have three packet read perms
+$here/orderly_web_cli.sh grant funder report:other/reports.read report:interactive/reports.read report:use_resource/reports.read */documents.read
 
 # Add non-admin users to their group roles
 $here/orderly_web_cli.sh add-members developer dev.user@example.com
