@@ -16,13 +16,20 @@ def create_sut():
     packit = PackitPermissions(packit_api_url, disable_verify)
     return Migrate(ow, packit)
 
-def assert_packit_users(packit, expected_usernames):
-    users = packit.get_users()
+def assert_packit_users(users, expected_usernames):
     usernames = list(map(lambda u: u["username"], users))
     assert sorted(expected_usernames) == sorted(usernames)
 
 def permission_matches(permission, name, packit_id = None):
     return permission == build_packit_perm(name, packit_id)
+
+def assert_packit_user_matches(packit_user, username, email, display_name, roles):
+    assert packit_user["username"] == username
+    assert packit_user["email"] == email
+    assert packit_user["displayName"] == display_name
+    user_roles = list(map(lambda r: r["name"], packit_user["roles"]))
+    assert sorted(user_roles) == sorted(roles + [username]) # expect user role too
+
 
 def test_migrate():
     sut = create_sut()
@@ -38,7 +45,7 @@ def test_migrate():
     assert len(published_report_versions["use_resource"]) == 1
 
     # Sanity test: check expected users and packets before we migrate
-    assert_packit_users(sut.packit, ["test.user"])
+    assert_packit_users(sut.packit.get_users(), ["test.user"])
 
     # Test expected roles and users to create
     assert sut.packit_admin_users == ["test.user"]
@@ -85,11 +92,15 @@ def test_migrate():
     assert permission_matches(funder_user_perms[0], "packet.read", published_report_versions["html"][0])
     assert permission_matches(funder_user_perms[1], "packet.read", published_report_versions["minimal"][0])
 
-
-    #sut.migrate_permissions()
+    sut.migrate_permissions()
 
     # Check expected users after we migrate
-    #assert_packit_users(sut.packit, ["dev.user", "funder.user", "test.user" ])
+    users = sut.packit.get_users()
+    assert_packit_users(users, ["dev.user", "funder.user", "test.user" ])
+    assert_packit_user_matches(users[0], "dev.user", "dev.user@example.com", "Dev User", ["developer"])
+    assert_packit_user_matches(users[1], "funder.user", "funder.user@example.com", "Funder User", ["funder"])
+    # TODO: permissions!
+
 
 
 

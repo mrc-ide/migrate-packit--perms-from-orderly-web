@@ -126,7 +126,7 @@ $here/orderly_web_cli.sh grant dev.user@example.com */reports.run
 $here/orderly_web_cli.sh add-groups funder developer
 
 # Give different perms to the roles than those the users have directly
-$here/orderly_web_cli.sh grant developer */reports.review */users.manage
+$here/orderly_web_cli.sh grant developer */reports.review */users.manage */reports.read
 # other has two published and two unpublished versions, interactive has one unpublished, use_resource has one published.
 # So funder role should have three packet read perms
 $here/orderly_web_cli.sh grant funder report:other/reports.read report:interactive/reports.read report:use_resource/reports.read */documents.read
