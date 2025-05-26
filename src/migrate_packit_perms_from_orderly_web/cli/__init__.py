@@ -24,12 +24,18 @@ def migrate_perms(montagu_url, orderly_web_url, packit_api_url, user, password, 
     m = Migrate(ow, packit)
     m.prepare_migrate()
     # Flag up changes which will be made to the user and give them the chance to cancel
-    click.echo(f"Not modifying Packit ADMIN users: {m.packit_admin_users}")
-    click.echo(f"Creating new users in Packit: {m.packit_users_to_create}")
-
     click.echo(f"Found the following published report version counts:")
     for name, versions in m.published_report_versions.items():
         click.echo(f"{name}: {len(versions)}")
+
+    click.echo(f"Not modifying Packit ADMIN users: {m.packit_admin_users}")
+    click.echo(f"Creating new users in Packit: {m.packit_users_to_create}")
+    for username, user_details in m.packit_users_to_create.items():
+        print(f"Username: {username}")
+        print(f"Email: {user_details["email"]}")
+        print(f"Display name: {user_details["display_name"]}")
+        print(f"Roles: {user_details["roles"]}")
+        print(f"Direct permissions: {user_details["direct_permissions"]}")
 
     click.echo(f"Creating new roles in Packit:")
     for role, permissions in m.packit_roles_to_create.items():

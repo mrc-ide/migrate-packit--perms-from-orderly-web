@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 set -ex
 here=$(dirname $0)
 export ORG=vimc
@@ -98,20 +99,29 @@ $here/montagu_cli.sh add "Funder User" funder.user \
     funder.user@example.com password \
     --if-not-exists
 $here/montagu_cli.sh addRole funder.user user
-$here/orderly_web_cli.sh add-users funder.user@example.com
-$here/orderly_web_cli.sh grant funder.user@example.com report:html/reports.read
-#FIRST_MINIMAL_VERSION=$(ls -t $here/../demo/archive/minimal | head -n 1)
-# minimal has one published and two unpublished versions,
-# So funder.user should have one direct packet read permission
-$here/orderly_web_cli.sh grant funder.user@example.com report:minimal/reports.read
+#$here/orderly_web_cli.sh add-users funder.user@example.com
 
 $here/montagu_cli.sh add "Dev User" dev.user \
     dev.user@example.com password \
     --if-not-exists
 $here/montagu_cli.sh addRole dev.user user
-$here/orderly_web_cli.sh add-users dev.user@example.com
+
+# Log in to OW as the users to force them to be created with Montagu name - using the OW CLI creates with email only so the
+# users are not linked with the Montagu users correctly.
+# Subsequent CLI calls must also identify users by email not by username
+python ./src/migrate_packit_perms_from_orderly_web/run_dev/login_ow_users.py
+#./scripts/testpy.sh
+
+# Grant perms to users and roles. NB OW user roles are identified by email not username
+
+# minimal has one published and two unpublished versions, html has one published
+# So funder.user should have two direct packet read permissions
+$here/orderly_web_cli.sh grant funder.user@example.com report:minimal/reports.read
+$here/orderly_web_cli.sh grant funder.user@example.com report:html/reports.read
+
 $here/orderly_web_cli.sh grant dev.user@example.com */reports.run
 
+#
 # Add two non-admin roles
 $here/orderly_web_cli.sh add-groups funder developer
 

@@ -34,9 +34,13 @@ class Migrate:
             else:
                 raise Exception(f"Found non-ADMIN user {username} in Packit. {clear_out_msg}")
 
-        self.packit_users_to_create = []
+        # REPORT VERSIONS
+        self.published_report_versions = self.orderly_web.get_published_report_versions()
+
+        map_perms = MapPermissions(self.published_report_versions)
+        self.packit_users_to_create = {}
         # keep a list of the full OW user objects we want to recreate as packit users
-        self.ow_users_to_create_in_packit = []
+        #self.ow_users_to_create_in_packit = []
         # Match on email against existing Packit ADMIN users as OW can have username set to "unknown" if user has not logged in
         packit_user_emails = list(map(lambda u: u["email"], self.packit_users))
         for ow_user in self.ow_users:
@@ -45,22 +49,27 @@ class Migrate:
             if email not in packit_user_emails:
                 # NB Some usernames in OW are "unknown" for users who have never logged in. In this case, just use email
                 to_create = username if username != "unknown" else email
-                self.packit_users_to_create.append(to_create)
-                self.ow_users_to_create_in_packit.append(ow_user)
+
+                roles = map(lambda u: u["source"], ow_user["role_permissions"])
+                roles = list(set(roles)) # dedupe
+
+                packit_perms = map_perms.map_ow_permissions_to_packit_permissions(ow_user["direct_permissions"])
+                self.packit_users_to_create[to_create] = {
+                    "email": ow_user["email"],
+                    "display_name": ow_user["display_name"],
+                    "direct_permissions": packit_perms,
+                    "roles": roles
+                }
+                #self.ow_users_to_create_in_packit.append(ow_user)
 
         # ROLES
         packit_non_admin_roles = list(filter(lambda r: r["name"] != "ADMIN" and not r["isUsername"], self.packit_roles))
         if len(packit_non_admin_roles):
             raise Exception(f"Found non-ADMIN roles in Packit: {packit_non_admin_roles}. {clear_out_msg}")
-        self.ow_roles_to_create_in_packit = list(filter(lambda r: r["name"] != "Admin", self.ow_roles))
-        #self.packit_roles_to_create = list(map(lambda r: r["name"], self.ow_roles_to_create_in_packit))
+        ow_roles_to_create_in_packit = list(filter(lambda r: r["name"] != "Admin", self.ow_roles))
 
-        # REPORT VERSIONS
-        self.published_report_versions = self.orderly_web.get_published_report_versions()
-
-        map_perms = MapPermissions(self.published_report_versions)
         self.packit_roles_to_create = {}
-        for ow_role in self.ow_roles_to_create_in_packit:
+        for ow_role in ow_roles_to_create_in_packit:
             role_name = ow_role["name"]
             #print(f"MAPPING FOR {ow_role}")
             packit_perms = map_perms.map_ow_permissions_to_packit_permissions(ow_role["permissions"])
@@ -72,18 +81,19 @@ class Migrate:
         for role, permissions in self.packit_roles_to_create.items():
             print(f"Creating role: {role}")
             self.packit.create_role(role)
-            print(f"Setting permissions on role: {role}")
+            print(f"Setting permissions on role {role}: {permissions}")
             self.packit.set_permissions_on_role(role, permissions)
 
-        # 3. Create users, with their roles
-        for ow_user in self.ow_users_to_create_in_packit:
-            keys = list(ow_user.keys())
-            #print(f"Keys are {keys}")
-            email = ow_user["email"]
-            username = ow_user["username"]
-            display_name = ow_user["display_name"]
-            username_to_create = username if username != "unknown" else email
-            print(f"Creating user: {username_to_create} (email: {email}, display name: {display_name}) ")
-            self.packit.create_user(username_to_create, email, display_name, [])
+        # 2. Create users, with their roles, and set direct permissions
+        for username, user_details in self.packit_users_to_create.items():
+            email = user_details["email"]
+            display_name = user_details["display_name"]
+            roles = user_details["roles"]
+            print(f"Creating user: {username} (email: {email}, display name: {display_name}, roles: {roles}) ")
+            self.packit.create_user(username, email, display_name, roles)
+            permissions = user_details["direct_permissions"]
+            print(f"Setting permissions on user {username}: {permissions}")
+            self.packit.set_permissions_on_role(username, permissions)
+
 
 
