@@ -143,8 +143,6 @@ $here/orderly_web_cli.sh add-members funder funder.user@example.com
 # Add a non-admin user. Migration should not run if this is present
 #docker exec $PACKIT_DB create-preauth-user --username "packit.only.user" --email "packit.only.user@example.com" --displayname "Packit Only User" --role "runner"
 
-# TODO: Test can actually log in as these users and see expected results after migration!
-
 echo "Dependencies are running. Press Ctrl+C to teardown."
 sleep infinity
 

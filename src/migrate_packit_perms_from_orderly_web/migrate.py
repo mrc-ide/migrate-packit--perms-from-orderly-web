@@ -47,20 +47,22 @@ class Migrate:
             username = ow_user["username"]
             email = ow_user["email"]
             if email not in packit_user_emails:
-                # NB Some usernames in OW are "unknown" for users who have never logged in. In this case, just use email
-                to_create = username if username != "unknown" else email
+                # NB Some usernames in OW are "unknown" for users who have never logged in. We do not migrate perms in
+                # case as it won't work without the Montagu user name
+                #to_create = username if username != "unknown" else email
+                if username == "unknown":
+                    print(f"Not migrating never logged in user: {email}")
+                else:
+                    roles = map(lambda u: u["source"], ow_user["role_permissions"])
+                    roles = list(set(roles)) # dedupe
 
-                roles = map(lambda u: u["source"], ow_user["role_permissions"])
-                roles = list(set(roles)) # dedupe
-
-                packit_perms = map_perms.map_ow_permissions_to_packit_permissions(ow_user["direct_permissions"])
-                self.packit_users_to_create[to_create] = {
-                    "email": ow_user["email"],
-                    "display_name": ow_user["display_name"],
-                    "direct_permissions": packit_perms,
-                    "roles": roles
-                }
-                #self.ow_users_to_create_in_packit.append(ow_user)
+                    packit_perms = map_perms.map_ow_permissions_to_packit_permissions(ow_user["direct_permissions"])
+                    self.packit_users_to_create[username] = {
+                        "email": ow_user["email"],
+                        "display_name": ow_user["display_name"],
+                        "direct_permissions": packit_perms,
+                        "roles": roles
+                    }
 
         # ROLES
         packit_non_admin_roles = list(filter(lambda r: r["name"] != "ADMIN" and not r["isUsername"], self.packit_roles))

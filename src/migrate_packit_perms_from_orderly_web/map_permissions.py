@@ -5,8 +5,6 @@ OUTPACK_READ = "outpack.read"
 PACKET_READ = "packet.read"
 
 def unpack_ow_perm(ow_perm):
-    print("UNPACKING")
-    print(ow_perm)
     return ow_perm["name"], ow_perm["scope_prefix"], ow_perm["scope_id"]
 
 def is_reviewer(ow_perms):
@@ -44,7 +42,7 @@ class MapPermissions:
     def map_ow_permissions_to_packit_permissions(self, ow_perms):
         # reports.run => packet.run, outpack.read
         # users.manage => user.manage
-        # reports.review => packet.read (global), outpack.read
+        # reports.review => packet.read (global), packet.manage (global), outpack.read
         # reports.read (global) => packet.read (packet) for all published versions
         #                            (if not reviewer who will already be getting global read)
         # reports.read (report) => packet.read (packet) for all published versions in that report
@@ -55,12 +53,9 @@ class MapPermissions:
         # - We are ignoring pinned reports manage permission as this is not implemented as a user feature in packit yet - we
         #   will assign this perm as required.
 
-        #print(f"DOING MAPPING OF {ow_perms}")
-
         packit_perms = []
         outpack_read_already_granted = False
         for ow_perm in ow_perms:
-            #print(f"DOING UNPACKING OF {ow_perm}")
             ow_perm_name,  ow_perm_scope_prefix, ow_perm_scope_id = unpack_ow_perm(ow_perm)
 
             match ow_perm_name:
