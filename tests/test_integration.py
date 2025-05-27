@@ -12,7 +12,6 @@ def create_sut():
     password="password"
     disable_verify = True
 
-    # arrange - create migrate sut
     ow = OrderlyWebPermissions(montagu_url, orderly_web_url, user, password, disable_verify)
     packit = PackitPermissions(packit_api_url, disable_verify)
     return Migrate(ow, packit)
@@ -83,7 +82,7 @@ def test_migrate():
     # Developer role:
     # reports.review => packet.read (global), packet.manage (global), outpack.read
     # users.manage => user.manage
-     # reports.read => no effect as reports-review already grants global read
+    # reports.read => no effect as reports-review already grants global read
     developer_perms = sut.packit_roles_to_create["developer"]
     assert len(developer_perms) == 4
     assert permission_matches(developer_perms[0], "packet.read")

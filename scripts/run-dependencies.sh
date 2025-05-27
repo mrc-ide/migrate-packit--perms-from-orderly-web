@@ -106,9 +106,8 @@ $here/montagu_cli.sh addRole dev.user user
 
 # Log in to OW as the users to force them to be created with Montagu name - using the OW CLI creates with email only so the
 # users are not linked with the Montagu users correctly.
-# Subsequent CLI calls must also identify users by email not by username
+# Subsequent OW CLI calls must also identify users by email not by username
 python ./src/migrate_packit_perms_from_orderly_web/run_dev/login_ow_users.py
-#./scripts/testpy.sh
 
 # Grant perms to users and roles. NB OW user roles are identified by email not username
 
@@ -119,7 +118,6 @@ $here/orderly_web_cli.sh grant funder.user@example.com report:html/reports.read
 
 $here/orderly_web_cli.sh grant dev.user@example.com */reports.run
 
-#
 # Add two non-admin roles
 $here/orderly_web_cli.sh add-groups funder developer
 
