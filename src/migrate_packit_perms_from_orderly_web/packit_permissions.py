@@ -8,7 +8,7 @@ class PackitPermissions:
         self.verify = not disable_verify
 
     def authenticate(self, montagu_token):
-        print("authenticating with Packit, montagu token is " + montagu_token)
+        print("authenticating with Packit")
         packit_login_url = f"{self.packit_api_url}/auth/login/montagu"
         headers = { "Authorization": f"Bearer {montagu_token}" }
         response = requests.get(packit_login_url, headers = headers, verify = self.verify)
@@ -16,7 +16,6 @@ class PackitPermissions:
             msg = 'Unexpected status code: {}. Unable to authenticate with Packit.'  # TODO: share response validate code
             raise Exception(msg.format(response.status_code))
         self.access_token = response.json()["token"]
-        print(f"Packit token: {self.access_token}")
 
     def get_auth_header(self):
         return {
