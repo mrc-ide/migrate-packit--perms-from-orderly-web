@@ -3,7 +3,6 @@ import json
 
 class PackitPermissions:
     def __init__(self, packit_api_url, disable_verify=False):
-        print("initialising PackitPermissions")
         self.packit_api_url = packit_api_url
         self.verify = not disable_verify
 

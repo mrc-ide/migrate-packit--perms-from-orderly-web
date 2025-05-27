@@ -97,7 +97,6 @@ $here/montagu_cli.sh add "Funder User" funder.user \
     funder.user@example.com password \
     --if-not-exists
 $here/montagu_cli.sh addRole funder.user user
-#$here/orderly_web_cli.sh add-users funder.user@example.com
 
 $here/montagu_cli.sh add "Dev User" dev.user \
     dev.user@example.com password \

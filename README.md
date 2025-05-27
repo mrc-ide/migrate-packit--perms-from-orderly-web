@@ -76,3 +76,5 @@ There is no CI set up for this project, so tests are just run locally.
   Montagu, but leaves the `outpack` folder behind as I was having problems removing that in script because of its permissions. 
   This means that packets can proliferate for users with global read permission! But users with limited read permissions should
   just see packets corresponding to the most recent published OrderlyWeb published versions.  
+- When running locally, we need to tell python requests to chill out about self-signed certificates, by setting the `verify`
+  parameter to False, hence the MIGRATE_DISABL~~~~E_VERIFY setting, which should only be set to True for the local environment. 

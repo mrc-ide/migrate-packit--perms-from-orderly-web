@@ -3,7 +3,6 @@ from urllib.parse import urljoin
 
 class OrderlyWebPermissions:
     def __init__(self, montagu_url, ow_url, user, password, disable_verify=False):
-        print("initialising OrderlyWebPermissions")
         self.montagu_url = montagu_url
         self.ow_url = ow_url
         self.user = user
