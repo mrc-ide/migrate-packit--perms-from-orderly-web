@@ -20,13 +20,13 @@ class OrderlyWebPermissions:
         response = requests.post(auth_url, data=data, auth=auth,
                                  headers=headers, verify = self.verify)
         if response.status_code != 200:
-            msg = 'Unexpected status code: {}. Unable to authenticate with montagu.'  # TODO: share response validate code
+            msg = 'Unexpected status code: {}. Unable to authenticate with montagu.'
             raise Exception(msg.format(response.status_code))
         self.montagu_token = response.json()['access_token']
 
         print("authenticating with OrderlyWeb")
         # make login call with montagu cookie set, and get ow cookie
-        ow_login_url = self.ow_url + "/login/" # TODO: find a better join!
+        ow_login_url = f"{self.ow_url}/login/"
         headers = { "Cookie": f"montagu_jwt_token={self.montagu_token}" }
         response = requests.get(ow_login_url, headers=headers, allow_redirects=False, verify = self.verify)
         if response.status_code != 302:
@@ -34,8 +34,8 @@ class OrderlyWebPermissions:
             raise Exception(msg.format(response.status_code))
         self.cookie = response.headers["Set-Cookie"]
 
-    def get(self,relative_url):
-        url = self.ow_url + relative_url # TODO: find better join
+    def get(self, relative_url):
+        url = self.ow_url + relative_url
         headers = {
             "Cookie": self.cookie,
             "Accept": "application/json"

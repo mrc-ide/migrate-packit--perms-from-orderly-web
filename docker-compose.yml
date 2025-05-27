@@ -39,7 +39,7 @@ services:
       - PACKIT_JWT_SECRET=changesecretkey
       - PACKIT_AUTH_REDIRECT_URL=
       - PACKIT_AUTH_METHOD=preauth
-      - PACKIT_JWT_EXPIRY_DAYS=1 # TODO: as part of mrc-9396 - Set this to the same as Montagu token expiry (in seconds)
+      - PACKIT_JWT_EXPIRY_DAYS=1
       - PACKIT_AUTH_ENABLED=true
       - PACKIT_AUTH_GITHUB_ORG=none
       - PACKIT_AUTH_GITHUB_TEAM=none

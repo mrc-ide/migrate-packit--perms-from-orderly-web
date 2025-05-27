@@ -29,12 +29,10 @@ def get_displayable_permissions(permissions):
 
 class Migrate:
     def __init__(self, orderly_web: OrderlyWebPermissions, packit: PackitPermissions):
-        print("initialising migration...")
         self.orderly_web = orderly_web
         self.packit = packit
 
     def prepare_migrate(self):
-        print("doing migration")
         self.orderly_web.authenticate()
         self.packit.authenticate(self.orderly_web.montagu_token)
         self.ow_roles = self.orderly_web.get_roles()
@@ -42,7 +40,7 @@ class Migrate:
         self.packit_users = self.packit.get_users()
         self.packit_roles = self.packit.get_roles()
 
-        # PHASE 1: PREPARE PACKIT CHANGES
+        # Refuse to run migration if there are any non-ADMIN users in Packit
         clear_out_msg = "Clear out non-admin Packit users and roles before running migration."
         ow_user_emails = list(map(lambda u: u["email"], self.ow_users))
         self.packit_admin_users = []
@@ -55,13 +53,13 @@ class Migrate:
             else:
                 raise Exception(f"Found non-ADMIN user {username} in Packit. {clear_out_msg}")
 
-        # REPORT VERSIONS
+        # Get all published report versions
         self.published_report_versions = self.orderly_web.get_published_report_versions()
 
         map_perms = MapPermissions(self.published_report_versions)
+
+        # USERS
         self.packit_users_to_create = {}
-        # keep a list of the full OW user objects we want to recreate as packit users
-        #self.ow_users_to_create_in_packit = []
         # Match on email against existing Packit ADMIN users as OW can have username set to "unknown" if user has not logged in
         packit_user_emails = list(map(lambda u: u["email"], self.packit_users))
         for ow_user in self.ow_users:
@@ -70,12 +68,17 @@ class Migrate:
             if email not in packit_user_emails:
                 # NB Some usernames in OW are "unknown" for users who have never logged in. We do not migrate perms in
                 # case as it won't work without the Montagu user name
-                #to_create = username if username != "unknown" else email
                 if username == "unknown":
                     print(f"Not migrating never logged in user: {email}")
                 else:
-                    roles = map(lambda u: u["source"], ow_user["role_permissions"])
-                    roles = list(set(roles)) # dedupe
+                    # Use "source" in "role_permissions" to determine which roles a user belong to - but need to be careful
+                    # as "source" sometimes contains multiple role names, separated by ", "
+                    roles = []
+                    for perm in ow_user["role_permissions"]:
+                        sources = perm["source"].split(", ")
+                        for source in sources:
+                            if source not in roles:
+                                roles.append(source)
 
                     packit_perms = map_perms.map_ow_permissions_to_packit_permissions(ow_user["direct_permissions"])
                     self.packit_users_to_create[username] = {

@@ -14,7 +14,7 @@ hatch build
 pip install dist/migrate_packit_perms_from_orderly_web-<version>.tar.gz
 ```
 ..where `<version>` can be found in `src/migrate_packit_perms_from_orderly_web/__about__.py`
-
+~~~~~~~~
 ## Running migrations
 
 TODO

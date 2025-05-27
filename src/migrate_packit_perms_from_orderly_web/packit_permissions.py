@@ -13,7 +13,7 @@ class PackitPermissions:
         headers = { "Authorization": f"Bearer {montagu_token}" }
         response = requests.get(packit_login_url, headers = headers, verify = self.verify)
         if response.status_code != 200:
-            msg = 'Unexpected status code: {}. Unable to authenticate with Packit.'  # TODO: share response validate code
+            msg = 'Unexpected status code: {}. Unable to authenticate with Packit.'
             raise Exception(msg.format(response.status_code))
         self.access_token = response.json()["token"]
 
@@ -45,7 +45,7 @@ class PackitPermissions:
     def put(self, relative_url, data):
         url = self.get_url(relative_url)
         headers = self.get_auth_header()
-        headers["Content-Type"] = "application/json" # TODO: be more DRY
+        headers["Content-Type"] = "application/json"
         response = requests.put(url, data = json.dumps(data), headers = headers, verify = self.verify)
         if response.status_code != 200:
             raise Exception(f"Unexpected status code {response.status_code} for PUT {url}")
