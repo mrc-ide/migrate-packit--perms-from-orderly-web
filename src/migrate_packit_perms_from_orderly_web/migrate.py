@@ -2,31 +2,6 @@ from migrate_packit_perms_from_orderly_web.orderly_web_permissions import Orderl
 from migrate_packit_perms_from_orderly_web.packit_permissions import PackitPermissions
 from migrate_packit_perms_from_orderly_web.map_permissions import MapPermissions
 
-def get_displayable_permissions(permissions):
-    # give some feedback to user on what permissions will be created for a user or role without overwhelming the console
-    # if there are multiple packet-specific permissions, show first 5 then "and N more"
-    global_perms = []
-    packet_read_to_display = []
-    packet_read_overspill_count = 0
-    for perm in permissions:
-        packet_id = perm["packetId"]
-        name = perm["permission"]
-        if packet_id is None:
-            global_perms.append(name)
-        else:
-            if name != "packet.read":
-                print(f"Unexpected scoped permission: {permission}")
-            elif len(packet_read_to_display) < 5:
-                packet_read_to_display.append(packet_id)
-            else:
-                packet_read_overspill_count = packet_read_overspill_count + 1
-    global_display = "" if len(global_perms) == 0 else f"global: {global_perms} "
-    packet_scoped_display = "" if len(packet_read_to_display) == 0 else f"scoped packet.read: {packet_read_to_display}"
-    overspill_display = "" if packet_read_overspill_count == 0 else f" and {packet_read_overspill_count} more"
-    return f"{global_display}{packet_scoped_display}{overspill_display}"
-
-
-
 class Migrate:
     def __init__(self, orderly_web: OrderlyWebPermissions, packit: PackitPermissions):
         self.orderly_web = orderly_web
@@ -120,5 +95,28 @@ class Migrate:
             print(f"Setting permissions on user {username}: {permissions}")
             self.packit.set_permissions_on_role(username, permissions)
 
+
+def get_displayable_permissions(permissions):
+    # give some feedback to user on what permissions will be created for a user or role without overwhelming the console
+    # if there are multiple packet-specific permissions, show first 5 then "and N more"
+    global_perms = []
+    packet_read_to_display = []
+    packet_read_overspill_count = 0
+    for perm in permissions:
+        packet_id = perm["packetId"]
+        name = perm["permission"]
+        if packet_id is None:
+            global_perms.append(name)
+        else:
+            if name != "packet.read":
+                print(f"Unexpected scoped permission: {permission}")
+            elif len(packet_read_to_display) < 5:
+                packet_read_to_display.append(packet_id)
+            else:
+                packet_read_overspill_count = packet_read_overspill_count + 1
+    global_display = "" if len(global_perms) == 0 else f"global: {global_perms} "
+    packet_scoped_display = "" if len(packet_read_to_display) == 0 else f"scoped packet.read: {packet_read_to_display}"
+    overspill_display = "" if packet_read_overspill_count == 0 else f" and {packet_read_overspill_count} more"
+    return f"{global_display}{packet_scoped_display}{overspill_display}"
 
 
