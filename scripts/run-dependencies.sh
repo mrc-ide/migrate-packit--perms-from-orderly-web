@@ -125,15 +125,21 @@ $here/orderly_web_cli.sh grant dev.user@example.com */reports.run
 # Add two non-admin roles
 $here/orderly_web_cli.sh add-groups funder developer
 
+# TODO: 3rd role, just for testing multiple roles - remove or integrate into tests
+$here/orderly_web_cli.sh add-groups runner
+
 # Give different perms to the roles than those the users have directly
 $here/orderly_web_cli.sh grant developer */reports.review */users.manage */reports.read
 # other has two published and two unpublished versions, interactive has one unpublished, use_resource has one published.
 # So funder role should have three packet read perms
 $here/orderly_web_cli.sh grant funder report:other/reports.read report:interactive/reports.read report:use_resource/reports.read */documents.read
 
+$here/orderly_web_cli.sh grant runner */reports.run
+
 # Add non-admin users to their group roles
 $here/orderly_web_cli.sh add-members developer dev.user@example.com
 $here/orderly_web_cli.sh add-members funder funder.user@example.com
+$here/orderly_web_cli.sh add-members runner funder.user@example.com
 
 # PACKIT - uncomment to test error case only
 # Add a non-admin role. Migration should not run if this is present

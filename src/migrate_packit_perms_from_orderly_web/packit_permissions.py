@@ -28,13 +28,11 @@ class PackitPermissions:
 
     def get(self,relative_url):
         url = self.get_url(relative_url)
-        print(f"Getting from: {url}")
         headers = self.get_auth_header()
         headers["Accept"] = "application/json"
         response = requests.get(url, headers=headers, verify = self.verify)
-        # TODO: throw if not 200
-        print(response.status_code)
-        print(response.text)
+        if response.status_code != 200:
+            raise Exception(f"Unexpected status code {response.status_code} for GET {url}")
         return response.json()
 
     def post(self, relative_url, data):
@@ -59,10 +57,7 @@ class PackitPermissions:
 
     def get_roles(self):
         print("Getting Packit roles")
-        result = self.get("/roles")
-        print("PACKIT ROLES")
-        print(result)
-        return result
+        return self.get("/roles")
 
     def create_user(self, username, email, display_name, user_roles):
         self.post("/user/external", {

@@ -23,44 +23,36 @@ class OrderlyWebPermissions:
             msg = 'Unexpected status code: {}. Unable to authenticate with montagu.'  # TODO: share response validate code
             raise Exception(msg.format(response.status_code))
         self.montagu_token = response.json()['access_token']
-        print("token:")
-        print(self.montagu_token)
 
         print("authenticating with OrderlyWeb")
         # make login call with montagu cookie set, and get ow cookie
         ow_login_url = self.ow_url + "/login/" # TODO: find a better join!
-        print(ow_login_url)
         headers = { "Cookie": f"montagu_jwt_token={self.montagu_token}" }
         response = requests.get(ow_login_url, headers=headers, allow_redirects=False, verify = self.verify)
         if response.status_code != 302:
-            msg = 'Unexpected status code: {}. Unable to authenticate with OrderlyWeb.'  # TODO: share response validate code
+            msg = 'Unexpected status code: {}. Unable to authenticate with OrderlyWeb.'
             raise Exception(msg.format(response.status_code))
-        print(response.text)
         self.cookie = response.headers["Set-Cookie"]
-        print("ow-cookie:")
-        print(self.cookie)
 
     def get(self,relative_url):
         url = self.ow_url + relative_url # TODO: find better join
-        print(f"Getting from: {url}")
         headers = {
             "Cookie": self.cookie,
             "Accept": "application/json"
         }
         response = requests.get(url, headers=headers, verify = self.verify)
-        #print(response.text)
-        # TODO: throww if not 200
+        if response.status_code != 200:
+            msg = 'Unexpected status code: {} for GET.'
+            raise Exception(msg.format(response.status_code))
         return response.json()["data"]
 
     def get_roles(self):
         print("getting OW roles")
-        response = self.get("/roles/")
-        return response
+        return self.get("/roles/")
 
     def get_users(self):
         print("getting OW users")
-        response = self.get("/users/")
-        return response
+        return self.get("/users/")
 
     def get_published_report_versions(self):
         print("getting published OW report versions")

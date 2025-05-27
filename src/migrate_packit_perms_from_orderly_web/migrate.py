@@ -2,6 +2,31 @@ from migrate_packit_perms_from_orderly_web.orderly_web_permissions import Orderl
 from migrate_packit_perms_from_orderly_web.packit_permissions import PackitPermissions
 from migrate_packit_perms_from_orderly_web.map_permissions import MapPermissions
 
+def get_displayable_permissions(permissions):
+    # give some feedback to user on what permissions will be created for a user or role without overwhelming the console
+    # if there are multiple packet-specific permissions, show first 5 then "and N more"
+    global_perms = []
+    packet_read_to_display = []
+    packet_read_overspill_count = 0
+    for perm in permissions:
+        packet_id = perm["packetId"]
+        name = perm["permission"]
+        if packet_id is None:
+            global_perms.append(name)
+        else:
+            if name != "packet.read":
+                print(f"Unexpected scoped permission: {permission}")
+            elif len(packet_read_to_display) < 5:
+                packet_read_to_display.append(packet_id)
+            else:
+                packet_read_overspill_count = packet_read_overspill_count + 1
+    global_display = "" if len(global_perms) == 0 else f"global: {global_perms} "
+    packet_scoped_display = "" if len(packet_read_to_display) == 0 else f"scoped packet.read: {packet_read_to_display}"
+    overspill_display = "" if packet_read_overspill_count == 0 else f" and {packet_read_overspill_count} more"
+    return f"{global_display}{packet_scoped_display}{overspill_display}"
+
+
+
 class Migrate:
     def __init__(self, orderly_web: OrderlyWebPermissions, packit: PackitPermissions):
         print("initialising migration...")
@@ -17,13 +42,9 @@ class Migrate:
         self.packit_users = self.packit.get_users()
         self.packit_roles = self.packit.get_roles()
 
-        print("OW USERS")
-        print(self.ow_users)
-
         # PHASE 1: PREPARE PACKIT CHANGES
         clear_out_msg = "Clear out non-admin Packit users and roles before running migration."
         ow_user_emails = list(map(lambda u: u["email"], self.ow_users))
-        print(f"OW users: {ow_user_emails}")
         self.packit_admin_users = []
         for user in self.packit_users:
             username = user["username"]
@@ -73,7 +94,6 @@ class Migrate:
         self.packit_roles_to_create = {}
         for ow_role in ow_roles_to_create_in_packit:
             role_name = ow_role["name"]
-            #print(f"MAPPING FOR {ow_role}")
             packit_perms = map_perms.map_ow_permissions_to_packit_permissions(ow_role["permissions"])
             self.packit_roles_to_create[role_name] = packit_perms
 

@@ -1,7 +1,7 @@
 import click
 
 from migrate_packit_perms_from_orderly_web.__about__ import __version__
-from migrate_packit_perms_from_orderly_web.migrate import Migrate
+from migrate_packit_perms_from_orderly_web.migrate import Migrate, get_displayable_permissions
 from migrate_packit_perms_from_orderly_web.orderly_web_permissions import OrderlyWebPermissions
 from migrate_packit_perms_from_orderly_web.packit_permissions import PackitPermissions
 
@@ -24,23 +24,27 @@ def migrate_perms(montagu_url, orderly_web_url, packit_api_url, user, password, 
     m = Migrate(ow, packit)
     m.prepare_migrate()
     # Flag up changes which will be made to the user and give them the chance to cancel
+    click.echo("")
     click.echo(f"Found the following published report version counts:")
     for name, versions in m.published_report_versions.items():
         click.echo(f"{name}: {len(versions)}")
+    click.echo("")
 
     click.echo(f"Not modifying Packit ADMIN users: {m.packit_admin_users}")
-    click.echo(f"Creating new users in Packit: {m.packit_users_to_create}")
+    click.echo(f"Creating new users in Packit:")
     for username, user_details in m.packit_users_to_create.items():
-        print(f"Username: {username}")
-        print(f"Email: {user_details["email"]}")
-        print(f"Display name: {user_details["display_name"]}")
-        print(f"Roles: {user_details["roles"]}")
-        print(f"Direct permissions: {user_details["direct_permissions"]}")
+        click.echo(f"Username: {username}")
+        click.echo(f"Email: {user_details["email"]}")
+        click.echo(f"Display name: {user_details["display_name"]}")
+        click.echo(f"Roles: {user_details["roles"]}")
+        click.echo(f"Direct permissions: {get_displayable_permissions(user_details["direct_permissions"])}")
+        click.echo("")
 
     click.echo(f"Creating new roles in Packit:")
     for role, permissions in m.packit_roles_to_create.items():
-        print(f"Name: {role}")
-        print(f"Permissions: {permissions}")
+        click.echo(f"Name: {role}")
+        click.echo(f"Permissions: {get_displayable_permissions(permissions)}")
+        click.echo("")
 
     if click.confirm("Continue with migration?"):
         m.migrate_permissions()
