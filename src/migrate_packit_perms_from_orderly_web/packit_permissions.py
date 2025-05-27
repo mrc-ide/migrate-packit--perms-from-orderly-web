@@ -59,7 +59,10 @@ class PackitPermissions:
 
     def get_roles(self):
         print("Getting Packit roles")
-        return self.get("/roles")
+        result = self.get("/roles")
+        print("PACKIT ROLES")
+        print(result)
+        return result
 
     def create_user(self, username, email, display_name, user_roles):
         self.post("/user/external", {

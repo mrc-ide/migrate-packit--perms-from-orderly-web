@@ -1,3 +1,4 @@
+from operator import itemgetter
 from migrate_packit_perms_from_orderly_web.migrate import Migrate
 from migrate_packit_perms_from_orderly_web.orderly_web_permissions import OrderlyWebPermissions
 from migrate_packit_perms_from_orderly_web.packit_permissions import PackitPermissions
@@ -20,6 +21,13 @@ def assert_packit_users(users, expected_usernames):
     usernames = list(map(lambda u: u["username"], users))
     assert sorted(expected_usernames) == sorted(usernames)
 
+def assert_packit_roles(roles, expected_role_names):
+    role_names = list(map(lambda r: r["name"], roles))
+    assert sorted(expected_role_names) == sorted(role_names)
+
+def role_from_list(roles, role_name):
+    return list(filter(lambda r: r["name"] == role_name, roles))[0]
+
 def permission_matches(permission, name, packit_id = None):
     return permission == build_packit_perm(name, packit_id)
 
@@ -30,6 +38,26 @@ def assert_packit_user_matches(packit_user, username, email, display_name, roles
     user_roles = list(map(lambda r: r["name"], packit_user["roles"]))
     assert sorted(user_roles) == sorted(roles + [username]) # expect user role too
 
+def assert_created_permissions_match_update_permissions(created_permissions, update_permissions):
+    # Packit DTOs for updating permissions have different format to fetched created permissions so can't compare directly
+    assert len(created_permissions) == len(update_permissions)
+
+    # Sigh.. as well as sorting we need to map packet info, which in created perms is an object not just an id
+    mapped_created = []
+    for created in created_permissions:
+        m = created.copy()
+        m["packet"] = None if created["packet"] is None else created["packet"]["id"]
+        mapped_created.append(m)
+
+    sorted_created = sorted(mapped_created, key=itemgetter("permission", "packet"))
+    sorted_update = sorted(update_permissions, key=itemgetter("permission", "packetId"))
+
+    for idx, created_perm in enumerate(sorted_created):
+        update_perm = sorted_update[idx]
+        assert created_perm["permission"] == update_perm["permission"]
+        assert created_perm["packet"] == update_perm["packetId"]
+        assert created_perm["packetGroup"] == update_perm["packetGroupId"]
+        assert created_perm["tag"] == update_perm["tagId"]
 
 def test_migrate():
     sut = create_sut()
@@ -55,6 +83,7 @@ def test_migrate():
     # Developer role:
     # reports.review => packet.read (global), packet.manage (global), outpack.read
     # users.manage => user.manage
+     # reports.read => no effect as reports-review already grants global read
     developer_perms = sut.packit_roles_to_create["developer"]
     assert len(developer_perms) == 4
     assert permission_matches(developer_perms[0], "packet.read")
@@ -99,7 +128,22 @@ def test_migrate():
     assert_packit_users(users, ["dev.user", "funder.user", "test.user" ])
     assert_packit_user_matches(users[0], "dev.user", "dev.user@example.com", "Dev User", ["developer"])
     assert_packit_user_matches(users[1], "funder.user", "funder.user@example.com", "Funder User", ["funder"])
-    # TODO: permissions!
+
+    # Role permissions, including user roles
+    roles = sut.packit.get_roles()
+    assert_packit_roles(roles, ["ADMIN", "developer", "funder", "dev.user", "funder.user", "test.user"])
+
+    created_developer_role = role_from_list(roles, "developer")
+    assert_created_permissions_match_update_permissions(created_developer_role["rolePermissions"], developer_perms)
+
+    created_funder_role = role_from_list(roles, "funder")
+    assert_created_permissions_match_update_permissions(created_funder_role["rolePermissions"], funder_perms)
+
+    created_dev_user_role = role_from_list(roles, "dev.user")
+    assert_created_permissions_match_update_permissions(created_dev_user_role["rolePermissions"], dev_user_perms)
+
+    created_funder_user_role = role_from_list(roles, "funder.user")
+    assert_created_permissions_match_update_permissions(created_funder_user_role["rolePermissions"], funder_user_perms)
 
 
 
