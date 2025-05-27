@@ -63,6 +63,7 @@ class MapPermissions:
                     packit_perms.append(build_packit_perm("packet.run"))
                     if not outpack_read_already_granted:
                         packit_perms.append(build_packit_perm(OUTPACK_READ))
+                        outpack_read_already_granted = True
                 case "users.manage":
                     packit_perms.append(build_packit_perm("user.manage"))
                 case "reports.review":
@@ -70,6 +71,7 @@ class MapPermissions:
                     packit_perms.append(build_packit_perm("packet.manage"))
                     if not outpack_read_already_granted:
                         packit_perms.append(build_packit_perm(OUTPACK_READ))
+                        outpack_read_already_granted = True
                 case "reports.read":
                     if not is_reviewer(ow_perms):
                         if ow_perm_scope_prefix == "report" and not is_global_reader(ow_perms):
