@@ -81,11 +81,6 @@ $here/orderly_web_cli.sh grant test.user@example.com */reports.read
 $here/orderly_web_cli.sh grant test.user@example.com */reports.review
 $here/orderly_web_cli.sh grant test.user@example.com */users.manage
 
-# copy helper scripts into packit-db
-docker compose cp $here/packit-db/add-permission-to-role orderly-web-packit-db:/bin/add-permission-to-role
-docker compose cp $here/packit-db/add-user-to-role orderly-web-packit-db:/bin/add-user-to-role
-docker compose cp $here/packit-db/create-role orderly-web-packit-db:/bin/create-role
-
 # Add test (admin) user to packit
 PACKIT_DB=montagu-orderly-web-packit-db-1
 docker exec $PACKIT_DB create-preauth-user --username "test.user" --email "test.user@example.com" --displayname "Test User" --role "ADMIN"

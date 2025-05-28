@@ -13,6 +13,9 @@ for required values such as OrderlyWeb and Packit URLs - if these values are not
 Migration is done in two stages: first, the details of the users and roles to be created in Packit are determined and
 displayed in the console. The user then has the opportunity to cancel or continue with the actual migration. 
 
+To run migrations you must have admin permission on both OrderlyWeb and Packit. Migrations will only run if Packit is
+"clean" i.e. if there are no non-ADMIN users or roles. Permissions of ADMIN users will not be changed by the migrations. 
+
 Python modules in `src` implement the main migration logic, mapping of OrderlyWeb to Packit permissions and HTTP
 interaction with OrderlyWeb and with Packit. There is also a `login_ow_users` module in the `run_dev` folder supporting 
 programmatic login of test users in local dev environment (more details below).
@@ -76,5 +79,5 @@ There is no CI set up for this project, so tests are just run locally.
   Montagu, but leaves the `outpack` folder behind as I was having problems removing that in script because of its permissions. 
   This means that packets can proliferate for users with global read permission! But users with limited read permissions should
   just see packets corresponding to the most recent published OrderlyWeb published versions.  
-- When running locally, we need to tell python requests to chill out about self-signed certificates, by setting the `verify`
-  parameter to False, hence the MIGRATE_DISABL~~~~E_VERIFY setting, which should only be set to True for the local environment. 
+- When running locally, we need to tell python `requests` to chill out about self-signed certificates, by setting the `verify`
+  parameter to False, hence the MIGRATE_DISABLE_VERIFY setting, which should only be set to True for the local environment. 
