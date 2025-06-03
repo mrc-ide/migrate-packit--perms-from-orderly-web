@@ -1,9 +1,14 @@
 from migrate_packit_perms_from_orderly_web.map_permissions import MapPermissions, build_packit_perm
+from migrate_packit_perms_from_orderly_web.permissions_csv_file import PermissionsCsvFile
 
 published_report_versions = {
     "r1": ["r1-v1", "r1-v2"],
     "r2": ["r2-v1"]
 }
+
+perm_owner = "test.user"
+csv_file = PermissionsCsvFile()
+
 sut = MapPermissions(published_report_versions)
 
 def test_build_packit_perm():
@@ -23,13 +28,13 @@ def test_build_packit_perm():
 def test_map_users_manage():
     result = sut.map_ow_permissions_to_packit_permissions([
         { "name": "users.manage", "scope_prefix": None, "scope_id": "" }
-    ])
+    ], perm_owner, csv_file)
     assert result == [build_packit_perm("user.manage")]
 
 def test_map_reports_run():
     result = sut.map_ow_permissions_to_packit_permissions([
         { "name": "reports.run", "scope_prefix": None, "scope_id": "" }
-    ])
+    ], perm_owner, csv_file)
     assert result == [
         build_packit_perm("packet.run"),
         build_packit_perm("outpack.read")
@@ -38,7 +43,7 @@ def test_map_reports_run():
 def test_map_reports_review():
     result = sut.map_ow_permissions_to_packit_permissions([
        { "name": "reports.review", "scope_prefix": None, "scope_id": "" }
-    ])
+    ], perm_owner, csv_file)
     assert result == [
         build_packit_perm("packet.read"),
         build_packit_perm("packet.manage"),
@@ -50,7 +55,7 @@ def test_outpack_read_mapped_only_once():
     result = sut.map_ow_permissions_to_packit_permissions([
         { "name": "reports.review", "scope_prefix": None, "scope_id": "" },
         { "name": "reports.run", "scope_prefix": None, "scope_id": "" }
-    ])
+    ], perm_owner, csv_file)
     assert result == [
         build_packit_perm("packet.read"),
         build_packit_perm("packet.manage"),
@@ -61,7 +66,7 @@ def test_outpack_read_mapped_only_once():
 def test_global_reports_read_maps_all_published_if_not_reviewer():
     result = sut.map_ow_permissions_to_packit_permissions([
         { "name": "reports.read", "scope_prefix": None, "scope_id": "" }
-    ])
+    ], perm_owner, csv_file)
     assert result == [
         build_packit_perm("packet.read", "r1-v1"),
         build_packit_perm("packet.read", "r1-v2"),
@@ -71,7 +76,7 @@ def test_global_reports_read_maps_all_published_if_not_reviewer():
 def test_scoped_reports_read_maps_scoped_published():
      result = sut.map_ow_permissions_to_packit_permissions([
           { "name": "reports.read", "scope_prefix": "report", "scope_id": "r1" }
-     ])
+     ], perm_owner, csv_file)
      assert result == [
         build_packit_perm("packet.read", "r1-v1"),
         build_packit_perm("packet.read", "r1-v2")
@@ -81,7 +86,7 @@ def test_global_reports_read_no_effect_if_reviewer():
     result = sut.map_ow_permissions_to_packit_permissions([
         { "name": "reports.read", "scope_prefix": None, "scope_id": "" },
         { "name": "reports.review", "scope_prefix": None, "scope_id": "" }
-    ])
+    ], perm_owner, csv_file)
     assert result == [
         build_packit_perm("packet.read"),
         build_packit_perm("packet.manage"),
@@ -92,7 +97,7 @@ def test_scoped_reports_read_no_effect_if_reviewer():
     result = sut.map_ow_permissions_to_packit_permissions([
         { "name": "reports.read", "scope_prefix": "report", "scope_id": "r1" },
         { "name": "reports.review", "scope_prefix": None, "scope_id": "" }
-    ])
+    ], perm_owner, csv_file)
     assert result == [
         build_packit_perm("packet.read"),
         build_packit_perm("packet.manage"),
@@ -103,7 +108,7 @@ def test_scoped_reports_read_no_effect_if_global_reader():
     result = sut.map_ow_permissions_to_packit_permissions([
         { "name": "reports.read", "scope_prefix": None, "scope_id": "" },
         { "name": "reports.read", "scope_prefix": "report", "scope_id": "r1" }
-    ])
+    ], perm_owner, csv_file)
     assert result == [
         build_packit_perm("packet.read", "r1-v1"),
         build_packit_perm("packet.read", "r1-v2"),
@@ -114,5 +119,5 @@ def test_unmapped_ow_perms_are_ignored():
     result = sut.map_ow_permissions_to_packit_permissions([
         { "name": "users.manage", "scope_prefix": None, "scope_id": "" },
         { "name": "documents.read", "scope_prefix": None, "scope_id": "" }
-    ])
+    ], perm_owner, csv_file)
     assert result == [build_packit_perm("user.manage")]

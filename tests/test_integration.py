@@ -143,7 +143,3 @@ def test_migrate():
 
     created_funder_user_role = role_from_list(roles, "funder.user")
     assert_created_permissions_match_update_permissions(created_funder_user_role["rolePermissions"], funder_user_perms)
-
-
-
-
