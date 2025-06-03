@@ -25,41 +25,25 @@ programmatic login of test users in local dev environment (more details below).
 ### Local dev environment
 
 To set up a test environment, and initialise OrderlyWeb:
-1. `hatch shell`
-2. `./scripts/run-dependencies`
+`./scripts/run-dependencies`
 
 As well as starting all required docker containers, this creates an ADMIN user in OrderlyWeb, `test.user`, and two 
-non-ADMIN users, `dev.user` and `funder.user`, with roles and direct permissions which can be migrated. 
-
-It is necessary to `hatch shell` before running deps because we make use of `orderly_web_permissions`  in `src` to log the 
-migrating users into OrderlyWeb. This is the easiest way to get the user initialised in OW with correct user name
-matching the user name in Montagu. We can't use the OrderlyWeb CLI script as usual because this simply uses the email
-for both user name and email fields, and we want to test Montagu-style users where these are different. 
+non-ADMIN users, `dev.user` and `funder.user`, with roles and direct permissions which can be migrated.
 
 To run the migrations (in a second console):
-1. `hatch shell`
-2. `./scripts/dev.sh` - this script installs the latest source and sets environment variables for local dev before running the migration. 
+`./scripts/dev.sh` - this script installs the latest source and sets environment variables for local dev before running the migration. 
 
 Once migration has run successfully, you should be able to login to https://localhost as funder.user@example.com or
 dev.user@example.com and see that the user has the expected access in Packit as detailed in the deps script (e.g. limited
 read access for the funder user).
 
 ### Montagu UAT
-1. `hatch shell`
-2. `./scripts/uat.sh` - this script sets the urls as required. You will need to log in with your UAT username and password, and will
+`./scripts/uat.sh` - this script sets the urls as required. You will need to log in with your UAT username and password, and will
     need to have Admin role in Packit. 
 
 ### Other environments
 
-1. Install from local source:
-```console
-hatch shell
-hatch build
-pip install dist/migrate_packit_perms_from_orderly_web-<version>.tar.gz
-```
-..where `<version>` can be found in `src/migrate_packit_perms_from_orderly_web/__about__.py`
-
-2. Run migrations: `migrate-perms`
+Run migrations: `hatch env run migrate-perms`
 
 This will prompt for urls etc - alternatively you can export these as environment variables - see 
 `src/migrate_packit_perms_from_orderly_web/cli` for details. 

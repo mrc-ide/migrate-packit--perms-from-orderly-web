@@ -44,7 +44,7 @@ services:
       - PACKIT_AUTH_GITHUB_ORG=none
       - PACKIT_AUTH_GITHUB_TEAM=none
   orderly-web-packit-db:
-    image: mrcide/packit-db:mrc-6478-create-preauth-userrole
+    image: mrcide/packit-db:main
     networks:
       - proxy
     healthcheck:

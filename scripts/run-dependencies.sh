@@ -101,7 +101,7 @@ $here/montagu_cli.sh addRole dev.user user
 # Log in to OW as the users to force them to be created with Montagu name - using the OW CLI creates with email only so the
 # users are not linked with the Montagu users correctly.
 # Subsequent OW CLI calls must also identify users by email not by username
-python ./src/migrate_packit_perms_from_orderly_web/run_dev/login_ow_users.py
+hatch env run python ./src/migrate_packit_perms_from_orderly_web/run_dev/login_ow_users.py
 
 # Grant perms to users and roles. NB OW user roles are identified by email not username
 

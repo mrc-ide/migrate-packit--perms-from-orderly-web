@@ -12,7 +12,7 @@ from migrate_packit_perms_from_orderly_web.packit_permissions import PackitPermi
 @click.option("--packit_api_url", envvar="MIGRATE_PACKIT_API_URL", prompt="Packit API url", help="Base url of Packit API")
 @click.option("--user", envvar="MIGRATE_USER", prompt="Username", help="Admin user for doing migration")
 @click.option("--password", envvar="MIGRATE_PASSWORD", prompt="Password", help="Password for admin user", hide_input=True)
-@click.option("--disable_verify", is_flag=True, envvar="MIGRATE_DISABLE_VERIFY", prompt="Disable certificate verify (localhost only)", help="Disable certificate verify (localhost only)", default=False)
+@click.option("--disable_verify", is_flag=True, help="Disable certificate verify (localhost only)", default=False)
 def migrate_perms(montagu_url, orderly_web_url, packit_api_url, user, password, disable_verify):
     click.echo(f"Montagu is at {montagu_url}")
     click.echo(f"OrderlyWeb is at {orderly_web_url}")
