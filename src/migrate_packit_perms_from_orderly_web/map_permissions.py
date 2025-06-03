@@ -35,11 +35,15 @@ class MapPermissions:
     def __init__(self, published_report_versions):
         self.published_report_versions = published_report_versions
 
-    def append_packet_read_perms_for_published_report_versions(self, report_name, list_to_append):
-        for version in self.published_report_versions[report_name]:
-            list_to_append.append(build_packit_perm(PACKET_READ, version)) # It would be more efficient to build these in advance!
+    def append_permission(self, permission_source, permission):
+        self._packit_perms.append(permission)
+        self._permissions_csv_file.add_row(self._permission_owner, permission_source, permission["permission"], permission["packetId"])
 
-    def map_ow_permissions_to_packit_permissions(self, ow_perms):
+    def append_packet_read_perms_for_published_report_versions(self, report_name, permission_source):
+        for version in self.published_report_versions[report_name]:
+            self.append_permission(permission_source, build_packit_perm(PACKET_READ, version))
+
+    def map_ow_permissions_to_packit_permissions(self, ow_perms, permission_owner, permissions_csv_file):
         # reports.run => packet.run, outpack.read
         # users.manage => user.manage
         # reports.review => packet.read (global), packet.manage (global), outpack.read
@@ -53,31 +57,33 @@ class MapPermissions:
         # - We are ignoring pinned reports manage permission as this is not implemented as a user feature in packit yet - we
         #   will assign this perm as required.
 
-        packit_perms = []
+        self._packit_perms = []
+        self._permission_owner = permission_owner
+        self._permissions_csv_file = permissions_csv_file
         outpack_read_already_granted = False
         for ow_perm in ow_perms:
             ow_perm_name,  ow_perm_scope_prefix, ow_perm_scope_id = unpack_ow_perm(ow_perm)
 
             match ow_perm_name:
                 case "reports.run":
-                    packit_perms.append(build_packit_perm("packet.run"))
+                    self.append_permission(ow_perm_name, build_packit_perm("packet.run"))
                     if not outpack_read_already_granted:
-                        packit_perms.append(build_packit_perm(OUTPACK_READ))
+                        self.append_permission(ow_perm_name, build_packit_perm(OUTPACK_READ))
                         outpack_read_already_granted = True
                 case "users.manage":
-                    packit_perms.append(build_packit_perm("user.manage"))
+                    self.append_permission(ow_perm_name, build_packit_perm("user.manage"))
                 case "reports.review":
-                    packit_perms.append(build_packit_perm(PACKET_READ))
-                    packit_perms.append(build_packit_perm("packet.manage"))
+                    self.append_permission(ow_perm_name, build_packit_perm(PACKET_READ))
+                    self.append_permission(ow_perm_name, build_packit_perm("packet.manage"))
                     if not outpack_read_already_granted:
-                        packit_perms.append(build_packit_perm(OUTPACK_READ))
+                        self.append_permission(ow_perm_name, build_packit_perm(OUTPACK_READ))
                         outpack_read_already_granted = True
                 case "reports.read":
                     if not is_reviewer(ow_perms):
                         if ow_perm_scope_prefix == "report" and not is_global_reader(ow_perms):
-                            self.append_packet_read_perms_for_published_report_versions(ow_perm_scope_id, packit_perms)
+                            self.append_packet_read_perms_for_published_report_versions(ow_perm_scope_id, f"{ow_perm_name}:{ow_perm_scope_id}")
                         elif ow_perm_scope_prefix is None:
                             for report_name in self.published_report_versions:
-                                self.append_packet_read_perms_for_published_report_versions(report_name, packit_perms)
+                                self.append_packet_read_perms_for_published_report_versions(report_name, ow_perm_name)
 
-        return packit_perms
+        return self._packit_perms

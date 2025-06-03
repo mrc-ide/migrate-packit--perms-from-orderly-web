@@ -1,6 +1,9 @@
+import os
 from migrate_packit_perms_from_orderly_web.orderly_web_permissions import OrderlyWebPermissions
 from migrate_packit_perms_from_orderly_web.packit_permissions import PackitPermissions
 from migrate_packit_perms_from_orderly_web.map_permissions import MapPermissions
+from migrate_packit_perms_from_orderly_web.permissions_csv_file import PermissionsCsvFile
+from migrate_packit_perms_from_orderly_web.user_roles_csv_file import UserRolesCsvFile
 
 class Migrate:
     def __init__(self, orderly_web: OrderlyWebPermissions, packit: PackitPermissions):
@@ -37,6 +40,8 @@ class Migrate:
         self.packit_users_to_create = {}
         # Match on email against existing Packit ADMIN users as OW can have username set to "unknown" if user has not logged in
         packit_user_emails = list(map(lambda u: u["email"], self.packit_users))
+        user_perms_csv_file = PermissionsCsvFile()
+        user_roles_csv_file = UserRolesCsvFile()
         for ow_user in self.ow_users:
             username = ow_user["username"]
             email = ow_user["email"]
@@ -54,8 +59,13 @@ class Migrate:
                         for source in sources:
                             if source not in roles:
                                 roles.append(source)
+                                user_roles_csv_file.add_row(username, source)
 
-                    packit_perms = map_perms.map_ow_permissions_to_packit_permissions(ow_user["direct_permissions"])
+                    packit_perms = map_perms.map_ow_permissions_to_packit_permissions(
+                        ow_user["direct_permissions"],
+                        username,
+                        user_perms_csv_file
+                    )
                     self.packit_users_to_create[username] = {
                         "email": ow_user["email"],
                         "display_name": ow_user["display_name"],
@@ -70,10 +80,26 @@ class Migrate:
         ow_roles_to_create_in_packit = list(filter(lambda r: r["name"] != "Admin", self.ow_roles))
 
         self.packit_roles_to_create = {}
+        role_perms_csv_file = PermissionsCsvFile()
         for ow_role in ow_roles_to_create_in_packit:
             role_name = ow_role["name"]
-            packit_perms = map_perms.map_ow_permissions_to_packit_permissions(ow_role["permissions"])
+            packit_perms = map_perms.map_ow_permissions_to_packit_permissions(
+                ow_role["permissions"],
+                role_name,
+                role_perms_csv_file
+            )
             self.packit_roles_to_create[role_name] = packit_perms
+
+        # write out csv files
+        print("Writing full details to /csv")
+        dir = "csv"
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+        user_perms_csv_file.write(f"{dir}/user_direct_perms.csv")
+        role_perms_csv_file.write(f"{dir}/role_perms.csv")
+        user_roles_csv_file.write(f"{dir}/user_roles.csv")
+        print("Finished writing csv files")
+
 
     def migrate_permissions(self):
         # 1. Create roles, and set their permissions - we do this in a separate step because only global perms can be
