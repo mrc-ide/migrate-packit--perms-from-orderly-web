@@ -57,6 +57,9 @@ class Migrate:
                     for perm in ow_user["role_permissions"]:
                         sources = perm["source"].split(", ")
                         for source in sources:
+                            # The Admin role in Packit is SHOUTY
+                            if source.upper() == "ADMIN":
+                                source = "ADMIN"
                             if source not in roles:
                                 roles.append(source)
                                 user_roles_csv_file.add_row(username, source)

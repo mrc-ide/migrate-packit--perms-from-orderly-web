@@ -99,7 +99,7 @@ def test_migrate():
     assert permission_matches(funder_perms[1], "packet.read", published_report_versions["other"][1])
     assert permission_matches(funder_perms[2], "packet.read", published_report_versions["use_resource"][0])
 
-    assert len(sut.packit_users_to_create.keys()) == 2
+    assert len(sut.packit_users_to_create.keys()) == 3
 
     dev_user = sut.packit_users_to_create["dev.user"]
     assert dev_user["roles"] == ["developer"]
@@ -120,23 +120,31 @@ def test_migrate():
     assert permission_matches(funder_user_perms[0], "packet.read", published_report_versions["html"][0])
     assert permission_matches(funder_user_perms[1], "packet.read", published_report_versions["minimal"][0])
 
+    admin_user = sut.packit_users_to_create["admin.user"]
+    admin_user_perms = admin_user["direct_permissions"]
+    assert len(admin_user_perms) == 0
+
     sut.migrate_permissions()
 
     # Check expected users after we migrate
     users = sut.packit.get_users()
-    assert_packit_users(users, ["dev.user", "funder.user", "test.user" ])
-    assert_packit_user_matches(users[0], "dev.user", "dev.user@example.com", "Dev User", ["developer"])
-    assert_packit_user_matches(users[1], "funder.user", "funder.user@example.com", "Funder User", ["funder"])
+    assert_packit_users(users, ["admin.user", "dev.user", "funder.user", "test.user" ])
+    assert_packit_user_matches(users[0], "admin.user", "admin.user@example.com", "Admin User", ["ADMIN"])
+    assert_packit_user_matches(users[1], "dev.user", "dev.user@example.com", "Dev User", ["developer"])
+    assert_packit_user_matches(users[2], "funder.user", "funder.user@example.com", "Funder User", ["funder"])
 
     # Role permissions, including user roles
     roles = sut.packit.get_roles()
-    assert_packit_roles(roles, ["ADMIN", "developer", "funder", "dev.user", "funder.user", "test.user"])
+    assert_packit_roles(roles, ["ADMIN", "admin.user", "developer", "funder", "dev.user", "funder.user", "test.user"])
 
     created_developer_role = role_from_list(roles, "developer")
     assert_created_permissions_match_update_permissions(created_developer_role["rolePermissions"], developer_perms)
 
     created_funder_role = role_from_list(roles, "funder")
     assert_created_permissions_match_update_permissions(created_funder_role["rolePermissions"], funder_perms)
+
+    created_admin_user_role = role_from_list(roles, "admin.user")
+    assert_created_permissions_match_update_permissions(created_admin_user_role["rolePermissions"], admin_user_perms)
 
     created_dev_user_role = role_from_list(roles, "dev.user")
     assert_created_permissions_match_update_permissions(created_dev_user_role["rolePermissions"], dev_user_perms)

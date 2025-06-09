@@ -98,6 +98,13 @@ $here/montagu_cli.sh add "Dev User" dev.user \
     --if-not-exists
 $here/montagu_cli.sh addRole dev.user user
 
+# Add an admin user to OW who does not exist in Packit, to test admins can be migrated successfully
+$here/montagu_cli.sh add "Admin User" admin.user \
+    admin.user@example.com password \
+    --if-not-exists
+
+$here/montagu_cli.sh addRole admin.user user
+
 # Log in to OW as the users to force them to be created with Montagu name - using the OW CLI creates with email only so the
 # users are not linked with the Montagu users correctly.
 # Subsequent OW CLI calls must also identify users by email not by username
@@ -121,9 +128,10 @@ $here/orderly_web_cli.sh grant developer */reports.review */users.manage */repor
 # So funder role should have three packet read perms
 $here/orderly_web_cli.sh grant funder report:other/reports.read report:interactive/reports.read report:use_resource/reports.read */documents.read
 
-# Add non-admin users to their group roles
+# Add users to their group roles
 $here/orderly_web_cli.sh add-members developer dev.user@example.com
 $here/orderly_web_cli.sh add-members funder funder.user@example.com
+$here/orderly_web_cli.sh add-members Admin admin.user@example.com
 
 echo "Dependencies are running. Press Ctrl+C to teardown."
 sleep infinity

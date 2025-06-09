@@ -12,3 +12,7 @@ dev_perms.authenticate()
 print("logging in funder user")
 funder_perms = OrderlyWebPermissions(montagu_url, ow_url, "funder.user@example.com", password, disable_verify=True)
 funder_perms.authenticate()
+
+print("logging in admin user")
+admin_perms = OrderlyWebPermissions(montagu_url, ow_url, "admin.user@example.com", password, disable_verify=True)
+admin_perms.authenticate()
