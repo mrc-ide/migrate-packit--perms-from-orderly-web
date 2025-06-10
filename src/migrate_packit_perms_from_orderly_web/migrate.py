@@ -110,7 +110,7 @@ class Migrate:
         for role, permissions in self.packit_roles_to_create.items():
             print(f"Creating role: {role}")
             self.packit.create_role(role)
-            print(f"Setting permissions on role {role}: {permissions}")
+            print(f"Setting permissions on role {role}: {len(permissions)} permissions")
             self.packit.set_permissions_on_role(role, permissions)
 
         # 2. Create users, with their roles, and set direct permissions
@@ -121,7 +121,7 @@ class Migrate:
             print(f"Creating user: {username} (email: {email}, display name: {display_name}, roles: {roles}) ")
             self.packit.create_user(username, email, display_name, roles)
             permissions = user_details["direct_permissions"]
-            print(f"Setting permissions on user {username}: {permissions}")
+            print(f"Setting permissions on user {username}: {len(permissions)} permissions")
             self.packit.set_permissions_on_role(username, permissions)
 
 
