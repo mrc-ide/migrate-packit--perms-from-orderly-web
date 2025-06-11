@@ -1,0 +1,103 @@
+name: "montagu"
+services:
+  api:
+    image: ${ORG}/montagu-api:master
+    ports:
+      - "8080:8080"
+    networks:
+      - proxy
+    depends_on:
+      - db
+    volumes:
+      - token_key_volume:/etc/montagu/api/token_key
+  orderly-web-web:
+    image: ${ORG}/orderly-web:master
+    networks:
+      - proxy
+    depends_on:
+      - api
+    volumes:
+      - orderly_volume:/orderly
+  orderly-web-packit:
+    image: mrcide/montagu-packit:main
+    networks:
+      - proxy
+  orderly-web-packit-api:
+    image: mrcide/packit-api:main
+    networks:
+      - proxy
+    depends_on:
+      orderly-web-packit-db:
+        condition: service_healthy
+      outpack_server:
+        condition: service_started
+    environment:
+      - PACKIT_OUTPACK_SERVER_URL=http://outpack_server:8000
+      - PACKIT_DB_URL=jdbc:postgresql://orderly-web-packit-db:5432/packit?stringtype=unspecified
+      - PACKIT_DB_USER=packituser
+      - PACKIT_DB_PASSWORD=changeme
+      - PACKIT_JWT_SECRET=changesecretkey
+      - PACKIT_AUTH_REDIRECT_URL=
+      - PACKIT_AUTH_METHOD=preauth
+      - PACKIT_JWT_EXPIRY_DAYS=1
+      - PACKIT_AUTH_ENABLED=true
+      - PACKIT_AUTH_GITHUB_ORG=none
+      - PACKIT_AUTH_GITHUB_TEAM=none
+  orderly-web-packit-db:
+    image: mrcide/packit-db:main
+    networks:
+      - proxy
+    healthcheck:
+      test: [ "CMD", "wait-for-db" ]
+  outpack_server:
+    image: mrcide/outpack_server:main
+    volumes:
+      - ./outpack:/outpack
+    networks:
+      - proxy
+  db:
+    image: ${ORG}/montagu-db:master
+    ports:
+      - "5432:5432"
+    command: /etc/montagu/postgresql.test.conf
+    networks:
+      - proxy
+  orderly:
+    image: ${ORG}/orderly.server:master
+    volumes:
+      - orderly_volume:/orderly
+    command: --port 8321 --go-signal /orderly_go /orderly
+    networks:
+      - proxy
+  contrib:
+    image: ${ORG}/montagu-contrib-portal:master
+    networks:
+      - proxy
+    depends_on:
+      - api
+  admin:
+    image: ${ORG}/montagu-admin-portal:master
+    networks:
+      - proxy
+    depends_on:
+      - api
+  reverse-proxy:
+    image: ${ORG}/montagu-reverse-proxy:master
+    ports:
+      - "443:443"
+      - "80:80"
+    command: "443 localhost"
+    depends_on:
+      - api
+      - orderly-web-web
+      - orderly-web-packit
+      - orderly-web-packit-api
+      - contrib
+      - admin
+    networks:
+      - "proxy"
+volumes:
+  orderly_volume:
+  token_key_volume:
+networks:
+  proxy:

@@ -1,0 +1,68 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "migrate-packit-perms-from-orderly-web"
+dynamic = ["version"]
+description = "One-off migration of packit permissions from OrderlyWeb"
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+keywords = []
+authors = [
+  { name = "Emma Russell", email = "e.russell@imperial.ac.uk" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+
+dependencies = [
+  "click",
+  "requests"
+]
+
+[project.urls]
+Documentation = "https://github.com/mrc-ide/migrate-packit-perms-from-orderly-web#readme"
+Issues = "https://github.com/mrc-ide/migrate-packit-perms-from-orderly-web/issues"
+Source = "https://github.com/mrc-ide/migrate-packit-perms-from-orderly-web"
+
+[project.scripts]
+migrate-perms = "migrate_packit_perms_from_orderly_web.cli:migrate_perms"
+
+[tool.hatch.version]
+path = "src/migrate_packit_perms_from_orderly_web/__about__.py"
+
+[tool.hatch.envs.types]
+extra-dependencies = [
+  "mypy>=1.0.0",
+]
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive {args:src/migrate_packit_perms_from_orderly_web tests}"
+
+[tool.coverage.run]
+source_pkgs = ["migrate_packit_perms_from_orderly_web", "tests"]
+branch = true
+parallel = true
+omit = [
+  "src/migrate_packit_perms_from_orderly_web/__about__.py",
+]
+
+[tool.coverage.paths]
+migrate_packit_perms_from_orderly_web = ["src/migrate_packit_perms_from_orderly_web", "*/migrate-packit-perms-from-orderly-web/src/migrate_packit_perms_from_orderly_web"]
+tests = ["tests", "*/migrate-packit-perms-from-orderly-web/tests"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]
