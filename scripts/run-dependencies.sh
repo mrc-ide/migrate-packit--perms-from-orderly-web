@@ -82,7 +82,7 @@ $here/orderly_web_cli.sh grant test.user@example.com */reports.review
 $here/orderly_web_cli.sh grant test.user@example.com */users.manage
 
 # Add test (admin) user to packit
-PACKIT_DB=montagu-orderly-web-packit-db-1
+PACKIT_DB=montagu-packit-db-1
 docker exec $PACKIT_DB create-preauth-user --username "test.user" --email "test.user@example.com" --displayname "Test User" --role "ADMIN"
 
 # Add some other example users and roles which we can test the migration against
