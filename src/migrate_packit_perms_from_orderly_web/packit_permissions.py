@@ -47,8 +47,6 @@ class PackitPermissions:
         headers["Content-Type"] = "application/json"
         response = requests.put(url, data = json.dumps(data), headers = headers, verify = self.verify)
         if response.status_code != 200:
-            print("error response")
-            print(response.text)
             raise Exception(f"Unexpected status code {response.status_code} for PUT {url}")
 
     def delete(self, relative_url):
@@ -92,7 +90,7 @@ class PackitPermissions:
 
     # This is used to check if packets referenced in scoped permissions (including those relevant to published report
     # permissions actually exist in packit). If not, this may indicate a problem with report migration. If any do not
-    # exist, remove from list of packets to set permissions for, and return separately
+    # exist, remove from list of packets to set permissions for, and return these separately
     def check_packets_exist(self, packets_by_group):
         nonexistent = []
         for packet_group, ids in packets_by_group.items():
