@@ -83,7 +83,7 @@ def test_migrate():
     # reports.review => packet.read (global), packet.manage (global), outpack.read
     # users.manage => user.manage
     # reports.read => no effect as reports-review already grants global read
-    developer_perms = sut.packit_roles_to_create["developer"]
+    developer_perms = sut.packit_roles_to_create["Developer"]
     assert len(developer_perms) == 4
     assert permission_matches(developer_perms[0], "packet.read")
     assert permission_matches(developer_perms[1], "packet.manage")
@@ -93,7 +93,7 @@ def test_migrate():
     # Funder role:
     # packet.read: "other" published version packets * 2
     # packet.read: "use_resource" published version * 1
-    funder_perms = sut.packit_roles_to_create["funder"]
+    funder_perms = sut.packit_roles_to_create["Funder"]
     assert len(funder_perms) == 3
     assert permission_matches(funder_perms[0], "packet.read", published_report_versions["other"][0])
     assert permission_matches(funder_perms[1], "packet.read", published_report_versions["other"][1])
@@ -102,7 +102,7 @@ def test_migrate():
     assert len(sut.packit_users_to_create.keys()) == 3
 
     dev_user = sut.packit_users_to_create["dev.user"]
-    assert dev_user["roles"] == ["developer"]
+    assert dev_user["roles"] == ["Developer"]
     # Dev user direct perms:
     # report.run => packet.run, outpack.read
     dev_user_perms = dev_user["direct_permissions"]
@@ -111,7 +111,7 @@ def test_migrate():
     assert permission_matches(dev_user_perms[1], "outpack.read")
 
     funder_user = sut.packit_users_to_create["funder.user"]
-    assert funder_user["roles"] == ["funder"]
+    assert funder_user["roles"] == ["Funder"]
     # Funder user direct perms
     # packet.read: html * 1
     # packet.read: minimal * 1
@@ -130,17 +130,17 @@ def test_migrate():
     users = sut.packit.get_users()
     assert_packit_users(users, ["admin.user", "dev.user", "funder.user", "test.user" ])
     assert_packit_user_matches(users[0], "admin.user", "admin.user@example.com", "Admin User", ["ADMIN"])
-    assert_packit_user_matches(users[1], "dev.user", "dev.user@example.com", "Dev User", ["developer"])
-    assert_packit_user_matches(users[2], "funder.user", "funder.user@example.com", "Funder User", ["funder"])
+    assert_packit_user_matches(users[1], "dev.user", "dev.user@example.com", "Dev User", ["Developer"])
+    assert_packit_user_matches(users[2], "funder.user", "funder.user@example.com", "Funder User", ["Funder"])
 
     # Role permissions, including user roles
     roles = sut.packit.get_roles()
-    assert_packit_roles(roles, ["ADMIN", "admin.user", "developer", "funder", "dev.user", "funder.user", "test.user"])
+    assert_packit_roles(roles, ["ADMIN", "admin.user", "Developer", "Funder", "dev.user", "funder.user", "test.user"])
 
-    created_developer_role = role_from_list(roles, "developer")
+    created_developer_role = role_from_list(roles, "Developer")
     assert_created_permissions_match_update_permissions(created_developer_role["rolePermissions"], developer_perms)
 
-    created_funder_role = role_from_list(roles, "funder")
+    created_funder_role = role_from_list(roles, "Funder")
     assert_created_permissions_match_update_permissions(created_funder_role["rolePermissions"], funder_perms)
 
     created_admin_user_role = role_from_list(roles, "admin.user")

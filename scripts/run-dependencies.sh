@@ -82,7 +82,7 @@ $here/orderly_web_cli.sh grant test.user@example.com */reports.review
 $here/orderly_web_cli.sh grant test.user@example.com */users.manage
 
 # Add test (admin) user to packit
-PACKIT_DB=montagu-orderly-web-packit-db-1
+PACKIT_DB=montagu-packit-db-1
 docker exec $PACKIT_DB create-preauth-user --username "test.user" --email "test.user@example.com" --displayname "Test User" --role "ADMIN"
 
 # Add some other example users and roles which we can test the migration against
@@ -120,17 +120,17 @@ $here/orderly_web_cli.sh grant funder.user@example.com report:html/reports.read
 $here/orderly_web_cli.sh grant dev.user@example.com */reports.run
 
 # Add two non-admin roles
-$here/orderly_web_cli.sh add-groups funder developer
+$here/orderly_web_cli.sh add-groups Funder Developer
 
 # Give different perms to the roles than those the users have directly
-$here/orderly_web_cli.sh grant developer */reports.review */users.manage */reports.read
+$here/orderly_web_cli.sh grant Developer */reports.review */users.manage */reports.read
 # other has two published and two unpublished versions, interactive has one unpublished, use_resource has one published.
 # So funder role should have three packet read perms
-$here/orderly_web_cli.sh grant funder report:other/reports.read report:interactive/reports.read report:use_resource/reports.read */documents.read
+$here/orderly_web_cli.sh grant Funder report:other/reports.read report:interactive/reports.read report:use_resource/reports.read */documents.read
 
 # Add users to their group roles
-$here/orderly_web_cli.sh add-members developer dev.user@example.com
-$here/orderly_web_cli.sh add-members funder funder.user@example.com
+$here/orderly_web_cli.sh add-members Developer dev.user@example.com
+$here/orderly_web_cli.sh add-members Funder funder.user@example.com
 $here/orderly_web_cli.sh add-members Admin admin.user@example.com
 
 echo "Dependencies are running. Press Ctrl+C to teardown."

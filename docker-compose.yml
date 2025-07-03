@@ -18,22 +18,22 @@ services:
       - api
     volumes:
       - orderly_volume:/orderly
-  orderly-web-packit:
-    image: mrcide/montagu-packit:main
+  packit:
+    image: ghcr.io/mrc-ide/montagu-packit:main
     networks:
       - proxy
-  orderly-web-packit-api:
-    image: mrcide/packit-api:main
+  packit-api:
+    image: ghcr.io/mrc-ide/packit-api:main
     networks:
       - proxy
     depends_on:
-      orderly-web-packit-db:
+      packit-db:
         condition: service_healthy
       outpack_server:
         condition: service_started
     environment:
       - PACKIT_OUTPACK_SERVER_URL=http://outpack_server:8000
-      - PACKIT_DB_URL=jdbc:postgresql://orderly-web-packit-db:5432/packit?stringtype=unspecified
+      - PACKIT_DB_URL=jdbc:postgresql://packit-db:5432/packit?stringtype=unspecified
       - PACKIT_DB_USER=packituser
       - PACKIT_DB_PASSWORD=changeme
       - PACKIT_JWT_SECRET=changesecretkey
@@ -43,8 +43,8 @@ services:
       - PACKIT_AUTH_ENABLED=true
       - PACKIT_AUTH_GITHUB_ORG=none
       - PACKIT_AUTH_GITHUB_TEAM=none
-  orderly-web-packit-db:
-    image: mrcide/packit-db:main
+  packit-db:
+    image: ghcr.io/mrc-ide/packit-db:main
     networks:
       - proxy
     healthcheck:
@@ -90,8 +90,8 @@ services:
     depends_on:
       - api
       - orderly-web-web
-      - orderly-web-packit
-      - orderly-web-packit-api
+      - packit
+      - packit-api
       - contrib
       - admin
     networks:
