@@ -33,6 +33,10 @@ class Migrate:
 
         # Get all published report versions
         self.published_report_versions = self.orderly_web.get_published_report_versions()
+        nonexistent_packets = self.packit.check_packets_exist(self.published_report_versions)
+        if (len(nonexistent_packets)):
+            print(f"WARNING: The following {len(nonexistent_packets)} expected packets do not exist, and will not have related permissions created. "
+            + f"There may have been an issue with migrating packets from OrderlyWeb.\n {nonexistent_packets}")
 
         map_perms = MapPermissions(self.published_report_versions)
 
